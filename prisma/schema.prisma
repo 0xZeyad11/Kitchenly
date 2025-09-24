@@ -1,0 +1,156 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User{
+  id String @id @default(cuid())
+  name String 
+  email String @unique
+  password String
+  nationalId String?
+  age Int?
+  lng Float?
+  lat Float?
+  role Role @default(CUSTOMER)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt 
+  menuItems MenuItem[]
+  customerOrders Order[] @relation("CustomerOrders")
+  chiefOrders Order[] @relation("ChiefOrders")
+}
+
+model MenuItem{
+  id String @id @default(cuid())
+  name String
+  description String
+  price Float
+  foodType FoodType
+  itemType ItemType
+  chief_id String 
+  chief User @relation(fields: [chief_id] , references: [id], onDelete: Cascade ) 
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  orderitem OrderItem[]
+}
+
+//TODO add location_from and location_to
+model Order{
+  id String @id @default(cuid())
+  customer_id String 
+  customer User @relation("CustomerOrders",fields: [customer_id] , references: [id], onDelete: Cascade)
+  chief_id  String
+  chief User @relation("ChiefOrders",fields: [chief_id] , references: [id], onDelete: Cascade)
+  order_status OrderStatus @default(PENDING)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  orderitems OrderItem[]
+  total_price Float
+  @@index([customer_id])
+  @@index([chief_id])
+}
+model OrderItem{
+  id String @id @default(cuid())
+  order_id String
+  order Order @relation(fields: [order_id],references: [id], onDelete: Cascade)
+  menuitem_id String 
+  menuitem MenuItem @relation(fields: [menuitem_id],references: [id], onDelete: Cascade)  
+  quantity Int
+  item_price Float
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+enum Role {   
+  ADMIN
+  CHIEF
+  CUSTOMER
+}
+
+enum FoodType {
+  MIDDLE_EASTERN
+  LEBANESE
+  TURKISH
+  PERSIAN
+  EGYPTIAN
+  ARABIAN
+  PALESTINIAN
+
+  CHINESE
+  JAPANESE
+  KOREAN
+  TAIWANESE
+  MONGOLIAN
+
+  THAI
+  VIETNAMESE
+  FILIPINO
+  MALAYSIAN
+  INDONESIAN
+  SINGAPOREAN
+
+  INDIAN
+  PAKISTANI
+  BANGLADESHI
+  SRI_LANKAN
+  NEPALI
+
+  ITALIAN
+  FRENCH
+  SPANISH
+  PORTUGUESE
+  GREEK
+  GERMAN
+  BRITISH
+  SCANDINAVIAN
+  RUSSIAN
+  EASTERN_EUROPEAN
+
+  AMERICAN
+  CANADIAN
+  MEXICAN
+  BRAZILIAN
+  ARGENTINIAN
+  CARIBBEAN
+
+  NORTH_AFRICAN
+  ETHIOPIAN
+  MOROCCAN
+  WEST_AFRICAN
+  SOUTH_AFRICAN
+
+  FAST_FOOD
+  VEGAN
+  VEGETARIAN
+  FUSION
+  STREET_FOOD
+  SEAFOOD
+  BBQ
+  GRILLED
+  DESSERT
+  SNACK
+}
+
+
+enum ItemType {
+  MAINDISH
+  DRINK 
+  DESSERT
+  BEVERAGE
+}
+
+enum OrderStatus {
+  PENDING
+  COOKING
+  DONE
+}
