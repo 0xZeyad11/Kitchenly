@@ -1,5 +1,5 @@
 import prisma from "../../config/db";
-import { Prisma, MenuItem } from "../../generated/prisma";
+import { Prisma, MenuItem } from "@prisma/client"
 
 
 
@@ -33,9 +33,11 @@ export async function getMenuItem(id: string): Promise<MenuItem | null>{
        throw error ; 
     }
 }
-export async function getAllMenuItems(id: string): Promise<MenuItem[]>{
+export async function getAllMenuItems(options: Prisma.MenuItemFindManyArgs): Promise<MenuItem[]>{
     try {
-       return await prisma.menuItem.findMany({where: {id}}); 
+       return await prisma.menuItem.findMany({
+        ...options,
+       }); 
     } catch (error) {
        throw error ; 
     }

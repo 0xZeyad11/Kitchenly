@@ -133,7 +133,7 @@ export const protectRoute = catchAsync(
 
 // TODO add every type of users that should be restirected in an array and filter based on it ,  in the future !!!
 // TODO this function is for chiefs to make crud operations on their menus
-export const RestirectCustomers = catchAsync(
+export const restirectCustomers = catchAsync(
   async (req:Request , res: Response , next: NextFunction) => { 
     if(!req.user){
       return next(new AppError('No User Found Sent that request',401)) ;
@@ -148,3 +148,12 @@ export const RestirectCustomers = catchAsync(
 
 
 // TODO ADD chief should be making crud on his menu only not any other menus
+
+export const adminsOnly = catchAsync(
+  async(req:Request ,res:Response, next:NextFunction) => {
+    const user= await getUser(req.user.id);
+    if(user.role !== "ADMIN"){
+      return next(new AppError('You are not an admin to perform this action !!' , 401)) ;
+    }
+  }
+)
