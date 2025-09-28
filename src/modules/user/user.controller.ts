@@ -1,107 +1,120 @@
-import { createUser, deleteUser, getAllUsers, getUser, updateUser } from "./user.repository";
-import {Request, Response, NextFunction} from 'express';
-import {  createUserSchema, UpdateUserInput } from "./user.schema";
-import { ZodError } from "zod";
+import {
+  deleteUser,
+  getAllUsers,
+  getUser,
+  updateUser,
+  getAllChiefs,
+  getAllCustomers
+} from "./user.repository";
+import { Request, Response, NextFunction } from "express";
+import { UpdateUserInput } from "./user.schema";
+import { catchAsync } from "../../common/utils/catchAsync";
+import AppError from "../../common/utils/AppError";
+import { buildPrismaQuery } from "../../common/utils/queryBuilder";
+import bcrypt from 'bcrypt';
 
-// TODO : Replace try catch with catchasync function 
-// TODO : Write Error handler
+// TODO ADD API FEATURES FOR GETALL,GETCUSTOMERS,GETCHIEFS
+// TODO PAGINATION,SORTING,LIMITING,FIELDS
 
-
-const errorhandler = (error: Error | ZodError , req: Request , res:Response) => {
-    console.error(error);
-   res.status(500).json({
-    status: "Something went wrong",
-    message: (error.message) , 
-    stack: (error.stack ),
-   }) ;
-}
-
-export const CreateNewUser = async (req: Request , res: Response , next: NextFunction) => {
-    try {
-        const validatedData = createUserSchema.safeParse(req.body);
-        if(!validatedData.success){
-         return   errorhandler(validatedData.error , req ,res);
-        }
-        const user = await  createUser(validatedData.data);
-       res.status(200).json({
-        status: 'Success',
-        message: 'New user created',
-        data: user 
-       }) 
-    } catch (error) {
-        errorhandler(error as Error , req ,res);
-    }
-}
-
-export const GetAllUsers = async (req:Request , res:Response, next:NextFunction) => {
-   try {
-    const found_users = await getAllUsers();
+export const GetAllUsers = catchAsync(
+  async (req: Request, res: Response, next: NextFunction) => {
+    const buildQuery = buildPrismaQuery(req.query);
+    const found_users = await getAllUsers(buildQuery);
     res.status(200).json({
-        status: "Success",
-        data: {
-            found_users
-        } 
+      status: "Success",
+      data: {
+        found_users,
+      },
     });
-    
-   } catch (error) {
-    errorhandler(error as Error, req, res);
-   } 
-}
+  }
+);
 
-
-export const GetUser = async (req: Request , res: Response,next: NextFunction) => { 
-    try{
-         const id = req.params.id ; 
-         const findUser = await getUser(id) ; 
-         if(!findUser){
-            return res.status(404).json({
-                status: "failed",
-                message: "Can not find the user"
-            });
-         }
-         res.status(200).json({
-            statuts: 'Success' , 
-            data: findUser , 
-         }) 
-    }catch(error){
-        errorhandler(error as Error ,req ,res) ;
+export const GetUser = catchAsync(
+  async (req: Request, res: Response, next: NextFunction) => {
+    const id = req.params.id;
+    const findUser = await getUser(id);
+    if (!findUser) {
+      return next(new AppError("There is no user found", 404));
     }
-}
+    res.status(200).json({
+      statuts: "Success",
+      data: findUser,
+    });
+  }
+);
 
-export const DeleteUser = async (req:Request , res:Response , next: NextFunction) => {
-    try{
-      const id = req.params.id;
-      const deleteuser = await deleteUser(id);
-      if(!deleteuser){
-        return res.status(404).json({
-            status: 'failed',
-            message: 'user is not found, so can not be deleted!'
-        });
-      }
-      res.status(204).json({
-        status: 'success',
-        message: 'user deleted successfully !!!'
-      })
-    }catch(error){
-        errorhandler(error as Error , req, res);
+export const DeleteUser = catchAsync(
+  async (req: Request, res: Response, next: NextFunction) => {
+    const id = req.params.id;
+    const deleteuser = await deleteUser(id);
+    if (!deleteuser) {
+      return next(new AppError("No user found!", 404));
     }
-}
+    res.status(204).json({
+      status: "success",
+      message: "user deleted successfully !!!",
+    });
+  }
+);
 
-export const UpdateUser = async (req: Request , res: Response, next: NextFunction) => {
-    const id = req.params.id ;
+export const UpdateUser = catchAsync(
+  async (req: Request, res: Response, next: NextFunction) => {
+    const id = req.params.id;
+
     const validatedData = UpdateUserInput.safeParse(req.body);
-    if(!validatedData.success){
-        return errorhandler(validatedData.error, req , res);
+    if (!validatedData.success) {
+      return next(new AppError("Invalid data entered", 400));
     }
-    const updatedUser = await updateUser(id , validatedData.data);
-    if(!updatedUser){
-        return res.status(404).json({
-            status:"failed",
-            message: 'can not find this user to update them'
-        })
+    if(validatedData.data.password){
+      validatedData.data.password = await  bcrypt.hash(validatedData.data.password, Number(process.env.SALT) );
+    }
+
+    // make sure users don't update thier role 
+   const olduser = await getUser(id);
+   if(validatedData.data.role){
+    validatedData.data.role = olduser.role ;
+   }
+
+   const updatedUser = await updateUser(id, validatedData.data);
+    if (!updatedUser) {
+      return res.status(404).json({
+        status: "failed",
+        message: "can not find this user to update them",
+      });
     }
     res.status(200).json({
-        status: 'success',
-        data: updateUser
+      status: "success",
+      data: updatedUser,
     });
-}
+  }
+);
+
+
+// Should be protected if role is admin
+
+export const GetAllChiefs = catchAsync(
+  async (req: Request, res: Response, next: NextFunction) => {
+    const options = buildPrismaQuery(req.query);
+    const chiefs = await getAllChiefs(options);
+    let currentLoggedinuser = req?.user;
+    res.status(200).json({
+      status: "success",
+      length: chiefs.length,
+      data: chiefs,
+      LoggedInUser: currentLoggedinuser ,
+    });
+  }
+);
+
+
+export const GetAllCustomers = catchAsync(
+  async (req:Request , res:Response, next:NextFunction) => {
+    const options = buildPrismaQuery(req.query);
+    const customers = await  getAllCustomers(options);
+    res.status(200).json({
+      status: 'success',
+      length: customers.length,
+      data: customers
+    })
+  }
+)

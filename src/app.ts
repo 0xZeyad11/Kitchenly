@@ -1,7 +1,14 @@
 import express, {Response, Request, NextFunction} from 'express' ; 
+import path from 'path';
+import dotenv from 'dotenv';
+dotenv.config({path: path.resolve(__dirname , "config/config.env")})
+
 import userRoute from './modules/user/user.route';
+import { globalErrorHandler } from './common/middelware/errorhandler.middleware';
+
 
 const app = express() ; 
+app.use(globalErrorHandler);
 
 
 app.use(express.json()) ; 

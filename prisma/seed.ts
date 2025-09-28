@@ -1,6 +1,6 @@
 // prisma/seed.ts
 import { PrismaClient, Role, FoodType, ItemType, OrderStatus } from '../src/generated/prisma'
-
+import { CreateUserService } from '../src/modules/user/user.service'
 
 const prisma = new PrismaClient()
 
@@ -15,27 +15,24 @@ async function main() {
   console.log("🌱 Starting database seed...")
   await clearDB(); 
   // Create a chief
-  const chief = await prisma.user.create({
-    data: {
+  const chief = await CreateUserService({
       name: "Chef Mario",
       email: "mario@kitchenly.com",
       password: "securepass",
       role: Role.CHIEF,
       lat: 30.0444,
       lng: 31.2357,
-    },
   })
 
   // Create a customer
-  const customer = await prisma.user.create({
-    data: {
+  const customer = await CreateUserService(
+    {
       name: "John Doe",
       email: "john@example.com",
       password: "123456",
       role: Role.CUSTOMER,
       lat: 30.033,
       lng: 31.233,
-    },
   })
 
   // Add menu items for the chief

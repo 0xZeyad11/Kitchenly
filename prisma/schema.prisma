@@ -25,6 +25,7 @@ model User{
   role Role @default(CUSTOMER)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt 
+  passwordUpdatedAt DateTime?
   menuItems MenuItem[]
   customerOrders Order[] @relation("CustomerOrders")
   chiefOrders Order[] @relation("ChiefOrders")
@@ -76,7 +77,6 @@ enum Role {
   CHIEF
   CUSTOMER
 }
-
 enum FoodType {
   MIDDLE_EASTERN
   LEBANESE
@@ -140,15 +140,12 @@ enum FoodType {
   DESSERT
   SNACK
 }
-
-
 enum ItemType {
   MAINDISH
   DRINK 
   DESSERT
   BEVERAGE
 }
-
 enum OrderStatus {
   PENDING
   COOKING

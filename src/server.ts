@@ -5,7 +5,8 @@ dotenv.config({path:'.env'});
 
 const port = 3000; 
 
-const server = app.listen(port, ()=>{
+const PORT = process.env.PORT ||  3000 ; 
+const server = app.listen(PORT, ()=>{
     console.log("⚙️  🎯 server connected successfully!") ;
 })
 

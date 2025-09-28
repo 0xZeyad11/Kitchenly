@@ -15,8 +15,11 @@
   "type": "commonjs",
   "dependencies": {
     "@prisma/client": "^6.16.2",
+    "@types/bcrypt": "^6.0.0",
+    "bcrypt": "^6.0.0",
     "dotenv": "^17.2.2",
     "express": "^5.1.0",
+    "jsonwebtoken": "^9.0.2",
     "pg": "^8.16.3",
     "zod": "^4.1.11"
   },
@@ -24,13 +27,21 @@
     "seed": "ts-node prisma/seed.ts"
   },
   "devDependencies": {
+    "@eslint/js": "^9.36.0",
     "@types/dotenv": "^6.1.1",
     "@types/express": "^5.0.3",
+    "@types/jsonwebtoken": "^9.0.10",
     "@types/mongoose": "^5.11.96",
     "@types/node": "^24.3.2",
+    "@typescript-eslint/eslint-plugin": "^8.44.1",
+    "@typescript-eslint/parser": "^8.44.1",
+    "eslint": "^9.36.0",
+    "globals": "^16.4.0",
+    "jiti": "^2.6.0",
     "nodemon": "^3.1.10",
     "prisma": "^6.16.2",
     "ts-node": "^10.9.2",
-    "typescript": "^5.9.2"
+    "typescript": "^5.9.2",
+    "typescript-eslint": "^8.44.1"
   }
 }
