@@ -1,17 +1,6 @@
-import AppError from "../../common/utils/AppError";
 import prisma from "../../config/db";
 import { User, Prisma } from "@prisma/client";
-// import { sendPrismaError } from "../../common/middelware/errorhandler.middleware";
-// import { buildPrismaQuery } from "../../common/utils/queryBuilder";
-
-// const userSelect = {
-//     id: true, 
-//     name: true, 
-//     email: true, 
-//     role: true,
-//     createdAt: true,
-// }
-// export type UserPublic = Prisma.UserGetPayload<{select: typeof  userSelect}>;
+import { sendPrismaError } from "../../common/middelware/errorhandler.middleware";
 
 
 export async function getUserByEmailAuth(data: string): Promise<any>{
@@ -21,7 +10,7 @@ export async function getUserByEmailAuth(data: string): Promise<any>{
       select: { "id": true,"password": true },
     });  
   }catch(error){
-    throw new AppError("User not found" , 404);
+    sendPrismaError(error);
   }
 }
 
@@ -29,32 +18,31 @@ export async function createUser(data: Prisma.UserCreateInput): Promise<User> {
   try {
     return await prisma.user.create({ data });
   } catch (error) {
-    throw error  ; 
+    throw sendPrismaError(error);
   }
 }
 
 export async function getAllUsers(
   options: Prisma.UserFindManyArgs
 ): Promise<User[]> {
-  return await prisma.user.findMany(
-    {
+  try {
+    return await prisma.user.findMany({
       ...options,
-    }
-  );
+    });
+  } catch (error) {throw sendPrismaError(error)}
 }
 
 export async function getAllChiefs(
   options: Prisma.UserFindManyArgs
 ): Promise<User[]> {
   try {
-    return await prisma.user.findMany(
-      {
-        where: {role: "CHIEF"},
-        ...options,
-      }
-    );
+    return await prisma.user.findMany({
+      where: { role: "CHIEF" },
+      ...options,
+    });
   } catch (error) {
-    throw new AppError("Error fetching chiefs", 400);
+    throw sendPrismaError(error);
+
   }
 }
 
@@ -64,20 +52,17 @@ export async function getUser(id: string): Promise<User> {
       where: { id },
     });
   } catch (error) {
-    if (error instanceof Prisma.PrismaClientKnownRequestError) {
-      throw error;
-    }
-    throw new AppError("Database Error 💥", 500);
+    throw sendPrismaError(error);
   }
 }
 
-export async function deleteUser(id: string): Promise<User| null> {
+export async function deleteUser(id: string): Promise<User | null> {
   try {
     return await prisma.user.delete({
       where: { id: id },
     });
   } catch (error) {
-    throw error;
+    throw sendPrismaError(error);
   }
 }
 
@@ -85,7 +70,11 @@ export async function updateUser(
   id: string,
   data: Prisma.UserUpdateInput
 ): Promise<User> {
-  return await prisma.user.update({ where: { id }, data});
+  try {
+    return await prisma.user.update({ where: { id }, data });
+  } catch (error) {
+    throw sendPrismaError(error);
+  }
 }
 
 export async function getAllCustomers(
@@ -93,11 +82,10 @@ export async function getAllCustomers(
 ): Promise<User[]> {
   try {
     return await prisma.user.findMany({
-      where: {role: 'CUSTOMER'},
-      ...options ,
+      where: { role: "CUSTOMER" },
+      ...options,
     });
   } catch (error) {
-    // throw new AppError("Error getting all customers", 400);
-    throw error;
+    throw sendPrismaError(error);
   }
 }

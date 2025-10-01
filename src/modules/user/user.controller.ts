@@ -20,6 +20,7 @@ export const GetAllUsers = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
     const buildQuery = buildPrismaQuery(req.query);
     const found_users = await getAllUsers(buildQuery);
+    console.log(req.body);
     res.status(200).json({
       status: "Success",
       data: {
@@ -60,6 +61,8 @@ export const DeleteUser = catchAsync(
 export const UpdateUser = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
     const id = req.params.id;
+    const UnAllowedList : string[] = ["password" , "role" , "updatedAt" , "createdAt" , "passwordUpdatedAt"];
+    let {data, password, role, updatedAt, createdAt, passwordUpdatedAt} = {...req.body} ;
 
     const validatedData = UpdateUserInput.safeParse(req.body);
     if (!validatedData.success) {
@@ -71,8 +74,8 @@ export const UpdateUser = catchAsync(
 
     // make sure users don't update thier role 
    const olduser = await getUser(id);
-   if(validatedData.data.role){
-    validatedData.data.role = olduser.role ;
+   if(validatedData.data.role && olduser.role !== 'ADMIN'){
+    return next(new AppError("invalid update request", 400));
    }
 
    const updatedUser = await updateUser(id, validatedData.data);
@@ -90,18 +93,14 @@ export const UpdateUser = catchAsync(
 );
 
 
-// Should be protected if role is admin
-
 export const GetAllChiefs = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
     const options = buildPrismaQuery(req.query);
     const chiefs = await getAllChiefs(options);
-    let currentLoggedinuser = req?.user;
     res.status(200).json({
       status: "success",
       length: chiefs.length,
       data: chiefs,
-      LoggedInUser: currentLoggedinuser ,
     });
   }
 );

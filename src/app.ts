@@ -4,6 +4,7 @@ import dotenv from 'dotenv';
 dotenv.config({path: path.resolve(__dirname , "config/config.env")})
 
 import userRoute from './modules/user/user.route';
+import menuRoute from './modules/menuitem/menuitem.route';
 import { globalErrorHandler } from './common/middelware/errorhandler.middleware';
 
 
@@ -13,6 +14,7 @@ app.use(globalErrorHandler);
 
 app.use(express.json()) ; 
 app.use('/api/v1/users' , userRoute);
+app.use('/api/v1/menuitem' , menuRoute);
 
 
 app.get('/' , (req:Request , res: Response, next:NextFunction) => { 

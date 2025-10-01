@@ -151,9 +151,14 @@ export const restirectCustomers = catchAsync(
 
 export const adminsOnly = catchAsync(
   async(req:Request ,res:Response, next:NextFunction) => {
-    const user= await getUser(req.user.id);
+    const user= req.user ; 
+    if(!user){
+      return next(new AppError('There is no logged in user to complete this action',401));
+    }
     if(user.role !== "ADMIN"){
       return next(new AppError('You are not an admin to perform this action !!' , 401)) ;
     }
+    next();
   }
 )
+

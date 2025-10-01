@@ -3,15 +3,15 @@ import AppError from "../utils/AppError";
 import { Prisma } from "@prisma/client";
 
 export const globalErrorHandler = (
-  err: Error,
+  err: any,
   req: Request,
   res: Response,
   next: NextFunction
 ) => {
-  sendError(err as AppError,req,res,next);
+  sendError(err ,req,res,next);
 };
 
-export const sendPrismaError= (error: any): AppError => {
+export const sendPrismaError= (error: any) => {
   if(error instanceof Prisma.PrismaClientKnownRequestError){
     switch(error.code){
       case "P2002":
@@ -27,14 +27,15 @@ export const sendPrismaError= (error: any): AppError => {
   return new AppError("unexpected DB error" , 400);
 }
 
-const sendErrorDev  = (err: AppError , res:Response) => {
+const sendErrorDev  = (err: AppError, res:Response) => {
       res.status(err.statusCode).json({
         status: err.status , 
         message: err.message , 
         stack: err.stack
       }) 
 };
-const sendErrorProd= (err: AppError , res:Response) => {
+
+const sendErrorProd= (err: AppError, res:Response) => {
       res.status(err.statusCode).json({
         status: err.status , 
         message: err.message , 
@@ -43,19 +44,15 @@ const sendErrorProd= (err: AppError , res:Response) => {
 
 
 const sendError = (
-  err: AppError,
+  err: any,
   req: Request,
   res: Response,
   next: NextFunction
 ) => {
+  if (process.env.NODE_ENV === "development") {
   // Check if the error is prisma error and modify: 
     //message
     //status code
-    let error ;
-    if(err instanceof Prisma.PrismaClientKnownRequestError){
-      error = sendPrismaError(err);
-    }
-  if (process.env.NODE_ENV === "development") {
     sendErrorDev(err, res);
   } else if (process.env.NODE_ENV === "production") {
     // just send the error message and don't send the error stack
