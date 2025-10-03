@@ -6,11 +6,12 @@ dotenv.config({path: path.resolve(__dirname , "config/config.env")})
 import userRoute from './modules/user/user.route';
 import menuRoute from './modules/menuitem/menuitem.route';
 import { globalErrorHandler } from './common/middelware/errorhandler.middleware';
+import cors from 'cors' ; 
 
 
 const app = express() ; 
 app.use(globalErrorHandler);
-
+app.use(cors());
 
 app.use(express.json()) ; 
 app.use('/api/v1/users' , userRoute);

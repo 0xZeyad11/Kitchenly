@@ -10,7 +10,7 @@ generator client {
 
 datasource db {
   provider = "postgresql"
-  url      = env("DATABASE_URL")
+  url      = "postgresql://postgres:zizo18889@localhost:5432/Kitchenly"
 }
 
 model User{
@@ -28,7 +28,7 @@ model User{
   passwordUpdatedAt DateTime?
   menuItems MenuItem[]
   customerOrders Order[] @relation("CustomerOrders")
-  chiefOrders Order[] @relation("ChiefOrders")
+  chefOrders Order[] @relation("ChefOrders")
 }
 
 model MenuItem{
@@ -38,8 +38,8 @@ model MenuItem{
   price Float
   foodType FoodType
   itemType ItemType
-  chief_id String 
-  chief User @relation(fields: [chief_id] , references: [id], onDelete: Cascade ) 
+  chef_id String 
+  chef User @relation(fields: [chef_id] , references: [id], onDelete: Cascade ) 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   
@@ -51,15 +51,15 @@ model Order{
   id String @id @default(cuid())
   customer_id String 
   customer User @relation("CustomerOrders",fields: [customer_id] , references: [id], onDelete: Cascade)
-  chief_id  String
-  chief User @relation("ChiefOrders",fields: [chief_id] , references: [id], onDelete: Cascade)
+  chef_id  String
+  chef User @relation("ChefOrders",fields: [chef_id] , references: [id], onDelete: Cascade)
   order_status OrderStatus @default(PENDING)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   orderitems OrderItem[]
   total_price Float
   @@index([customer_id])
-  @@index([chief_id])
+  @@index([chef_id])
 }
 model OrderItem{
   id String @id @default(cuid())
@@ -74,7 +74,7 @@ model OrderItem{
 }
 enum Role {   
   ADMIN
-  CHIEF
+  CHEF 
   CUSTOMER
 }
 enum FoodType {

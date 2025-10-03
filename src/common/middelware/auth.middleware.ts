@@ -31,7 +31,7 @@ export const signup = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
     const validatedData = createUserSchema.safeParse(req.body);
     if (!validatedData.success || validatedData.error) {
-      return next(new AppError("Error validating the user data", 400));
+      return next(new AppError(validatedData.error.message, 400));
     }
     const user = await CreateUserService(validatedData.data);
     const token = generateToken(user.id);

@@ -1,25 +1,25 @@
 // prisma/seed.ts
-import { PrismaClient, Role, FoodType, ItemType, OrderStatus } from '../src/generated/prisma'
+import { PrismaClient, Role, FoodType, ItemType, OrderStatus } from '@prisma/client'
 import { CreateUserService } from '../src/modules/user/user.service'
 
 const prisma = new PrismaClient()
 
 
-async function clearDB() {
-  await prisma.orderItem.deleteMany()
-  await prisma.order.deleteMany()
-  await prisma.menuItem.deleteMany()
-  await prisma.user.deleteMany()
-}
+// async function clearDB() {
+//   await prisma.orderItem.deleteMany()
+//   await prisma.order.deleteMany()
+//   await prisma.menuItem.deleteMany()
+//   await prisma.user.deleteMany()
+// }
 async function main() {
   console.log("🌱 Starting database seed...")
-  await clearDB(); 
+  // await clearDB(); 
   // Create a chief
   const chief = await CreateUserService({
       name: "Chef Mario",
       email: "mario@kitchenly.com",
       password: "securepass",
-      role: Role.CHIEF,
+      role: Role.CHEF,
       lat: 30.0444,
       lng: 31.2357,
   })
@@ -30,7 +30,7 @@ async function main() {
       name: "John Doe",
       email: "john@example.com",
       password: "123456",
-      role: Role.CUSTOMER,
+      role: "CHEF",
       lat: 30.033,
       lng: 31.233,
   })
@@ -43,7 +43,7 @@ async function main() {
       price: 12.5,
       foodType: FoodType.ITALIAN,
       itemType: ItemType.MAINDISH,
-      chief_id: chief.id,
+      chef_id: chief.id,
     },
   })
 
@@ -54,7 +54,7 @@ async function main() {
       price: 7.0,
       foodType: FoodType.ITALIAN,
       itemType: ItemType.DESSERT,
-      chief_id: chief.id,
+      chef_id: chief.id,
     },
   })
 
@@ -62,7 +62,7 @@ async function main() {
   const order = await prisma.order.create({
     data: {
       customer_id: customer.id,
-      chief_id: chief.id,
+      chef_id: chief.id,
       order_status: OrderStatus.PENDING,
       total_price: 102,
       orderitems: {

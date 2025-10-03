@@ -37,7 +37,7 @@ export async function getMenuItem(
 ): Promise<MenuItem | null> {
   try {
     return await prisma.menuItem.findUniqueOrThrow({
-      where: { id: id, chief_id: chiefid },
+      where: { id: id, chef_id: chiefid },
     });
   } catch (error) {
     throw sendPrismaError(error);

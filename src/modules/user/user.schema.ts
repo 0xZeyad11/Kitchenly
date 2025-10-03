@@ -1,5 +1,5 @@
 import {z} from 'zod';
-
+import { Role } from '@prisma/client';
 
 export const createUserSchema = z.object({
   name: z.string().min(3, "Name must be at least 3 characters").transform(val => val.trim()),
@@ -15,11 +15,11 @@ export const createUserSchema = z.object({
       /[\!\@\#\$\%\^\&\*]/,
       "Password must contain at least one special character"
     ),
-  role: z.enum(["ADMIN", "CHIEF", "CUSTOMER"]).default("CUSTOMER"),
+  role: z.enum(Role).default("CUSTOMER"),
   age: z.number().min(18, "User must be at least 18 years old").optional(),
   lat: z.number().optional(),
   lng: z.number().optional(),
-  nationalId: z.string().optional().transform((val) => val?.trim()),
+  nationalId: z.string().transform((val) => val?.trim()).optional(),
 });
 
 export type CreateUserInput = z.infer<typeof createUserSchema>;

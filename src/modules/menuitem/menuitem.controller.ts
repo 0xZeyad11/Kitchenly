@@ -28,7 +28,7 @@ export const CreateNewItem = catchAsync(
       price: data.price,
       foodType: data.foodType , 
       itemType: data.itemType,
-      chief: {
+      chef: {
         connect:{
           id: req.user.id,
         }
@@ -65,7 +65,7 @@ export const GetMenuItemByID = catchAsync(
   async(req:Request,res:Response ,next:NextFunction) => {
     const id = req.params.id ; 
     const user = req.user ; 
-    if(!user || user.role !== 'CHIEF'){
+    if(!user || user.role !== 'CHEF'){
       return next(new AppError("This chief doesn't exists!" , 404));
     }
     const finditem = await getMenuItem(id , user.id);  

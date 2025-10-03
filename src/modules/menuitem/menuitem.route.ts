@@ -20,7 +20,7 @@ const router = Router();
 router.route("/").get(protectRoute, adminsOnly, GetAllMenuItemsAdmin);
 
 router
-  .route("/chief/:chiefid/")
+  .route("/chef/:chefid/")
   .get(protectRoute, CheckChiefExists, GetAllMenuItems)
   .post(protectRoute, restirectCustomers, CheckChiefExists, CreateNewItem);
 

@@ -37,7 +37,7 @@ export async function getAllChiefs(
 ): Promise<User[]> {
   try {
     return await prisma.user.findMany({
-      where: { role: "CHIEF" },
+      where: { role: "CHEF" },
       ...options,
     });
   } catch (error) {
