@@ -7,27 +7,26 @@ import {
   GetMenuItemByID,
   GetAllMenuItemsAdmin,
 } from "./menuitem.controller";
-import {
-  restirectCustomers,
-  adminsOnly,
-  protectRoute,
-} from "../../common/middelware/auth.middleware";
-import { CheckChiefExists } from "../../common/middelware/chiefs.middleware";
+import { protectRoute } from "../../common/middelware/auth.middleware";
+import { Role } from "@prisma/client";
+import restrictTo from "../../common/middelware/restrictTo";
 
 const router = Router();
 
-// !IMPORTANT This route is for admins only !!!
-router.route("/").get(protectRoute, adminsOnly, GetAllMenuItemsAdmin);
+//ADMIN ONLY ROUTE
+router
+  .route("/")
+  .get(protectRoute, restrictTo(Role.ADMIN), GetAllMenuItemsAdmin);
 
 router
   .route("/chef/:chefid/")
-  .get(protectRoute, CheckChiefExists, GetAllMenuItems)
-  .post(protectRoute, restirectCustomers, CheckChiefExists, CreateNewItem);
+  .get(protectRoute, restrictTo(Role.ADMIN, Role.CHEF), GetAllMenuItems)
+  .post(protectRoute, restrictTo(Role.ADMIN, Role.CHEF), CreateNewItem);
 
 router
-  .route("chief/:chiefid/:id")
-  .patch(protectRoute, restirectCustomers, UpdateMenuItem)
-  .get(protectRoute, CheckChiefExists, GetMenuItemByID)
-  .delete(protectRoute, restirectCustomers, CheckChiefExists, DeleteMenuItem);
+  .route("chef/:chefid/:id")
+  .patch(protectRoute, restrictTo(Role.ADMIN, Role.CHEF), UpdateMenuItem)
+  .get(protectRoute, GetMenuItemByID)
+  .delete(protectRoute, restrictTo(Role.ADMIN, Role.CHEF), DeleteMenuItem);
 
 export default router;

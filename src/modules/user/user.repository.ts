@@ -1,13 +1,13 @@
-import prisma from "../../config/db";
+import prisma from "../../../prisma/db";
 import { User, Prisma } from "@prisma/client";
 import { sendPrismaError } from "../../common/middelware/errorhandler.middleware";
-
+import bcrypt from 'bcrypt';
 
 export async function getUserByEmailAuth(data: string): Promise<any>{
   try{
     return await prisma.user.findUniqueOrThrow({
       where: { email: data },
-      select: { "id": true,"password": true },
+      select: { id: true,  name: true, email: true  , password: true},
     });  
   }catch(error){
     sendPrismaError(error);

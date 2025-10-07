@@ -1,17 +1,24 @@
 import { Response, Request, NextFunction } from "express";
 import { promisify } from "util";
 import jwt, { SigningKeyCallback } from "jsonwebtoken";
+import bcrypt from 'bcrypt';
 import { catchAsync } from "../utils/catchAsync";
 import {
+  AddPasswordResetToken,
   CreateUserService,
   VerifyPassword,
 } from "../../modules/user/user.service";
 import AppError from "../utils/AppError";
-import { createUserSchema } from "../../modules/user/user.schema";
+import { createUserSchema , emailOnlySchema, UpdateUserInput , UserPartialType } from "../../modules/user/user.schema";
 import {
   getUser,
   getUserByEmailAuth,
+  updateUser,
 } from "../../modules/user/user.repository";
+import sendEmail from "../../utils/sendEmail";
+import prisma from "../../../prisma/db";
+import crypto from 'crypto'
+
 
 export const generateToken = (id: string): string => {
   const Secret = process.env.JWT_SECRET as string;
@@ -42,6 +49,7 @@ export const signup = catchAsync(
       data: {
         user: {
           id: user.id,
+          name: user.name
         },
       },
     });
@@ -65,6 +73,7 @@ export const login = catchAsync(
       token,
       data: {
         id: user.id,
+        name: user.name
       },
     });
   }
@@ -131,34 +140,112 @@ export const protectRoute = catchAsync(
   }
 );
 
-// TODO add every type of users that should be restirected in an array and filter based on it ,  in the future !!!
-// TODO this function is for chiefs to make crud operations on their menus
-export const restirectCustomers = catchAsync(
-  async (req:Request , res: Response , next: NextFunction) => { 
-    if(!req.user){
-      return next(new AppError('No User Found Sent that request',401)) ;
+// STEPS OF USER RESETTING PASSWORD FLOW  
+/**
+ * user makes a post request on the forgot password link on the frontend
+ * enters his email to check if the user already exists in the database or not 
+ * user recieves an email containing the reset-token 
+ * user adds the resets token in the input field
+ * We check if the added reset token is the same as the one the existed user has in his records
+ * if valid: 
+ *  2 input fields for entering the password and confirming it
+ * if not : 
+ *  user doesn't have an account and redirected to the signup page in the frontend (Handeled by the front end)
+ */
+
+
+//INCOMPLETE implement the rest of this function
+export const forgotPassword = catchAsync(
+  async (req: Request, res: Response, next: NextFunction) => {
+    const { email } = { ...req.body };
+    const validdata = emailOnlySchema.safeParse({email});
+    if (!validdata.success) {
+      return next(new AppError(`${validdata.error.message}`, 400));
     }
-    const current_user_role = req.user.role ; 
-    if(current_user_role === "CUSTOMER"){
-        return next(new AppError('You are not authorized to perform this action' , 401)) ;
+    const finduser = await getUserByEmailAuth(validdata.data.email);
+    if (!finduser) {
+      return next(new AppError("Invalid email, please try again!", 404));
     }
-    next();
+
+    const reset_token = await AddPasswordResetToken(finduser.id);
+    const reset_url = `${req.protocol}://${req.get(
+      "host"
+    )}/api/v1/users/resetPassword/${reset_token}`;
+    const message = `Forgot your password?, Please make a PATCH request with your new password and confirm your password on the url: ${reset_url}\nIf you didn't forget 
+    your password, Please Ignore this email!`;
+
+    try {
+      await sendEmail({
+        to: finduser.email,
+        subject: `Your password reset email, (Valid for 10 minutes only!!!)`,
+        text: message,
+      });
+
+      res.status(200).json({
+        status: "success",
+        message: "Token sent to email!",
+      });
+    } catch (error) {
+      await prisma.user.update({
+        where: { id: finduser.id },
+        data: {
+          passwordResetToken: null,
+          passwordResetTokenExpiry: null,
+        },
+      });
+      const err  = error as Error; 
+      return next(
+        new AppError(
+          `Something went wrong when sending the token to the user email || ${err.message}`,
+          500
+        )
+      );
+    }
   }
-)
+);
 
-
-// TODO ADD chief should be making crud on his menu only not any other menus
-
-export const adminsOnly = catchAsync(
-  async(req:Request ,res:Response, next:NextFunction) => {
-    const user= req.user ; 
-    if(!user){
-      return next(new AppError('There is no logged in user to complete this action',401));
+export const resetPassword = catchAsync(
+  async (req: Request, res: Response, next: NextFunction) => {
+    const url_token = req.params.token;
+    const hashed_token = crypto
+      .createHash("sha256")
+      .update(url_token)
+      .digest("hex");
+    const user = await prisma.user.findFirstOrThrow({
+      where: {
+        passwordResetToken: hashed_token,
+        passwordResetTokenExpiry: { gt: new Date() },
+      },
+    });
+    if (!user) {
+      return next(
+        new AppError(`Can't find this user, maybe the token has expired`, 404)
+      );
     }
-    if(user.role !== "ADMIN"){
-      return next(new AppError('You are not an admin to perform this action !!' , 401)) ;
+    let { password } = req.body;
+    const validpassword = UpdateUserInput.safeParse({ password });
+    if (!validpassword.success) {
+      return next(new AppError(`${validpassword.error.message}`, 400));
     }
-    next();
+    const newpassword = await bcrypt.hash(
+      validpassword.data.password as string,
+      Number(process.env.SALT) || 10
+    );
+
+    const user_with_new_password = await updateUser(user.id, {
+      password: newpassword,
+      passwordUpdatedAt: new Date(Date.now()),
+      passwordResetToken: null, 
+      passwordResetTokenExpiry: null 
+    });
+
+    const token = generateToken(user_with_new_password.id) ; 
+    req.user = user_with_new_password ; 
+    res.status(200).json({
+      status: "success",
+      message: "user password updated",
+      token ,
+      data: user_with_new_password,
+    });
   }
-)
-
+);

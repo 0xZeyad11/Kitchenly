@@ -20,16 +20,16 @@ import { getUser } from "../../modules/user/user.repository";
 
 
 
-export const CheckChiefExists= catchAsync(
-    async (req:Request , res: Response ,next: NextFunction) => {
-        const chefid = req.params.chefid ; 
-        if(!chefid){
-            return next(new AppError("Not enough data to get the chief" , 404)) ;
-        }
-        const chef = await getUser(chefid);
-        if(!chef || chef.role !== 'CHEF'){
-            return next(new AppError(`This user is not authorized to have a menu  item` , 401));
-        }
-        next();
-    }
-)
+// export const CheckChefExists= catchAsync(
+//     async (req:Request , res: Response ,next: NextFunction) => {
+//         const chefid = req.params.chefid ; 
+//         if(!chefid){
+//             return next(new AppError("Not enough data to get the chef" , 404)) ;
+//         }
+//         const chef = await getUser(chefid);
+//         if(!chef || chef.role !== 'CHEF'){
+//             return next(new AppError(`This user is not authorized to have a menu  item` , 401));
+//         }
+//         next();
+//     }
+// )

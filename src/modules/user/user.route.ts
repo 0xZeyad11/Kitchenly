@@ -1,17 +1,36 @@
-import {Router} from 'express' ; 
-import {  DeleteUser, GetAllChiefs, GetAllCustomers, GetAllUsers, GetUser, UpdateUser  } from './user.controller';
-import { login  , signup , protectRoute, restirectCustomers, adminsOnly} from '../../common/middelware/auth.middleware';
+import { Router } from "express";
+import {
+  DeleteUser,
+  GetAllChiefs,
+  GetAllCustomers,
+  GetAllUsers,
+  GetUser,
+  UpdateUser,
+} from "./user.controller";
+import {
+  login,
+  signup,
+  protectRoute,
+  resetPassword,
+  forgotPassword,
+} from "../../common/middelware/auth.middleware";
 
+
+import restrictTo from "../../common/middelware/restrictTo";
+import { Role } from "@prisma/client";
 
 const router = Router();
 
-router.route('/').get(protectRoute , adminsOnly ,GetAllUsers);
-router.route('/signup').post(signup);
-router.route('/login').post(login);
+// TODO : Remove Individual restrict functions and replace with a single function that takes an array of allowed user types
+router.route("/").get(protectRoute, restrictTo(Role.ADMIN), GetAllUsers);
+router.route("/signup").post(signup);
+router.route("/login").post(login);
 
-//TODO Protect these 2 routes for admin only!
-router.route('/chiefs').get(protectRoute, adminsOnly ,GetAllChiefs);
-router.route('/customers').get(protectRoute , adminsOnly , GetAllCustomers);
+router.route("/forgotpassword").patch(forgotPassword);
+router.route("/resetpassword/:token").patch( resetPassword);
 
-router.route('/:id').get(GetUser).delete(DeleteUser).patch(UpdateUser);
-export default router ; 
+router.route("/chiefs").get(protectRoute, GetAllChiefs);
+router.route("/customers").get(protectRoute, restrictTo(Role.ADMIN), GetAllCustomers);
+
+router.route("/:id").get(GetUser).delete(DeleteUser).patch(UpdateUser);
+export default router;

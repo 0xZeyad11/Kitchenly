@@ -1,4 +1,4 @@
-import prisma from "../../config/db";
+import prisma from "../../../prisma/db";
 import { sendPrismaError } from "../../common/middelware/errorhandler.middleware";
 import { Prisma, MenuItem } from "@prisma/client";
 

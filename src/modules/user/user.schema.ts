@@ -22,5 +22,15 @@ export const createUserSchema = z.object({
   nationalId: z.string().transform((val) => val?.trim()).optional(),
 });
 
+export const emailOnlySchema = createUserSchema.pick({
+  email: true 
+});
+
+
+//Refactor this shit, replace with `pick` whenever possible
 export type CreateUserInput = z.infer<typeof createUserSchema>;
 export const UpdateUserInput = createUserSchema.partial();
+export type UserPartialType = z.infer<typeof UpdateUserInput> ; 
+
+
+export type EmailOnlyInput = z.infer<typeof emailOnlySchema> ;

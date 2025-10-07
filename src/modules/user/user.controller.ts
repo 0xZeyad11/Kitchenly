@@ -12,9 +12,9 @@ import { catchAsync } from "../../common/utils/catchAsync";
 import AppError from "../../common/utils/AppError";
 import { buildPrismaQuery } from "../../common/utils/queryBuilder";
 import bcrypt from 'bcrypt';
+import { FilterObject } from "../../utils/filterObject";
 
 // TODO ADD API FEATURES FOR GETALL,GETCUSTOMERS,GETCHIEFS
-// TODO PAGINATION,SORTING,LIMITING,FIELDS
 
 export const GetAllUsers = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
@@ -58,26 +58,17 @@ export const DeleteUser = catchAsync(
   }
 );
 
+
 export const UpdateUser = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
     const id = req.params.id;
     const UnAllowedList : string[] = ["password" , "role" , "updatedAt" , "createdAt" , "passwordUpdatedAt"];
-    let {data, password, role, updatedAt, createdAt, passwordUpdatedAt} = {...req.body} ;
-
-    const validatedData = UpdateUserInput.safeParse(req.body);
+    const data = {...req.body};
+    const filteredData = FilterObject(UnAllowedList , data)
+    const validatedData = UpdateUserInput.safeParse(filteredData);
     if (!validatedData.success) {
       return next(new AppError("Invalid data entered", 400));
     }
-    if(validatedData.data.password){
-      validatedData.data.password = await  bcrypt.hash(validatedData.data.password, Number(process.env.SALT) );
-    }
-
-    // make sure users don't update thier role 
-   const olduser = await getUser(id);
-   if(validatedData.data.role && olduser.role !== 'ADMIN'){
-    return next(new AppError("invalid update request", 400));
-   }
-
    const updatedUser = await updateUser(id, validatedData.data);
     if (!updatedUser) {
       return res.status(404).json({
@@ -87,7 +78,12 @@ export const UpdateUser = catchAsync(
     }
     res.status(200).json({
       status: "success",
-      data: updatedUser,
+      data: {
+        id: updatedUser.id,
+        name: updatedUser.name,
+        email: updatedUser.email,
+
+      }
     });
   }
 );
