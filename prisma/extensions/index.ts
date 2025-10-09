@@ -1,11 +1,11 @@
-import { handlePasswordUpdate } from "./user.extensions";
+// import { handlePasswordUpdate } from "./user.extensions";
 
 export const prismaExtensions = {
   query: {
     user: {
-      async update(ctx: any) {
-        return handlePasswordUpdate(ctx);
-      },
+      // async update(ctx: any) {
+      //   return handlePasswordUpdate(ctx);
+      // },
     },
   },
 };

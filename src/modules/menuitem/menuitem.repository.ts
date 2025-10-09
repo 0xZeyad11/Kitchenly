@@ -38,6 +38,13 @@ export async function getMenuItem(
   try {
     return await prisma.menuItem.findUniqueOrThrow({
       where: { id: id, chef_id: chiefid },
+      include:{
+        chef:{
+          select: {
+            name: true , 
+          }
+        }
+      }
     });
   } catch (error) {
     throw sendPrismaError(error);
@@ -51,7 +58,7 @@ export async function getAllMenuItems(
   try {
     return await prisma.menuItem.findMany({
       ...options,
-      where:{id: chiefid}
+      where:{chef_id: chiefid},
     });
   } catch (error) {
     throw sendPrismaError(error);
@@ -65,7 +72,30 @@ export async function getAllMenuItemsAdmin(
   try {
     return await prisma.menuItem.findMany({
       ...options , 
+      include:{
+        chef: {
+          select:{
+            name: true, 
+            email: true, 
+            id: true
+          }
+        }
+      },
+      
     }) 
+  } catch (error) {
+   throw sendPrismaError(error); 
+  }
+}
+
+export async function getMenuItemBySlug(slug: string): Promise<MenuItem | null>{
+  try {
+   return await prisma.menuItem.findFirstOrThrow({where:{slug} , include:{chef:{
+    select:{
+      name: true
+    }
+   }
+   }}) 
   } catch (error) {
    throw sendPrismaError(error); 
   }

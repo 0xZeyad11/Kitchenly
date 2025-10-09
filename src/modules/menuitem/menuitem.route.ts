@@ -10,23 +10,31 @@ import {
 import { protectRoute } from "../../common/middelware/auth.middleware";
 import { Role } from "@prisma/client";
 import restrictTo from "../../common/middelware/restrictTo";
+import { getAllMenuItems } from "./menuitem.repository";
 
 const router = Router();
 
 //ADMIN ONLY ROUTE
 router
-  .route("/")
+  .route("/admin")
   .get(protectRoute, restrictTo(Role.ADMIN), GetAllMenuItemsAdmin);
 
+// CHEFS ROUTES //
 router
-  .route("/chef/:chefid/")
-  .get(protectRoute, restrictTo(Role.ADMIN, Role.CHEF), GetAllMenuItems)
-  .post(protectRoute, restrictTo(Role.ADMIN, Role.CHEF), CreateNewItem);
+  .route('/')
+  .post(protectRoute, restrictTo(Role.ADMIN, Role.CHEF), CreateNewItem)
+  .get(protectRoute, restrictTo(Role.ADMIN, Role.CHEF), GetAllMenuItems);
 
 router
-  .route("chef/:chefid/:id")
+  .route("/:id")
   .patch(protectRoute, restrictTo(Role.ADMIN, Role.CHEF), UpdateMenuItem)
-  .get(protectRoute, GetMenuItemByID)
   .delete(protectRoute, restrictTo(Role.ADMIN, Role.CHEF), DeleteMenuItem);
+
+///////////////////////////////////////////////////////////
+
+// PUBLIC  //
+
+router
+.route("/public/:chefid").get(protectRoute , GetAllMenuItems);
 
 export default router;

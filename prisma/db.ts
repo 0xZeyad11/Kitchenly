@@ -10,6 +10,9 @@ const PRISMA_CONFIG: Prisma.PrismaClientOptions = {
   omit: {
     user:{
       password: true ,
+    },
+    menuItem:{
+      chef_id:true,
     }
   }
 } ; 

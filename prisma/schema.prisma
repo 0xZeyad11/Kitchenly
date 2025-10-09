@@ -41,6 +41,7 @@ model MenuItem{
   foodType FoodType
   itemType ItemType
   chef_id String 
+  slug String?
   chef User @relation(fields: [chef_id] , references: [id], onDelete: Cascade ) 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
