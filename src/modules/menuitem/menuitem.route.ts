@@ -4,13 +4,11 @@ import {
   GetAllMenuItems,
   DeleteMenuItem,
   UpdateMenuItem,
-  GetMenuItemByID,
   GetAllMenuItemsAdmin,
 } from "./menuitem.controller";
 import { protectRoute } from "../../common/middelware/auth.middleware";
 import { Role } from "@prisma/client";
 import restrictTo from "../../common/middelware/restrictTo";
-import { getAllMenuItems } from "./menuitem.repository";
 
 const router = Router();
 
@@ -21,7 +19,7 @@ router
 
 // CHEFS ROUTES //
 router
-  .route('/')
+  .route("/")
   .post(protectRoute, restrictTo(Role.ADMIN, Role.CHEF), CreateNewItem)
   .get(protectRoute, restrictTo(Role.ADMIN, Role.CHEF), GetAllMenuItems);
 
@@ -34,7 +32,6 @@ router
 
 // PUBLIC  //
 
-router
-.route("/public/:chefid").get(protectRoute , GetAllMenuItems);
+router.route("/public/:chefid").get(protectRoute, GetAllMenuItems);
 
 export default router;

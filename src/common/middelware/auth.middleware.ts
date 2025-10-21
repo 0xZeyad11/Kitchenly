@@ -47,10 +47,7 @@ export const signup = catchAsync(
       status: "success",
       token,
       data: {
-        user: {
-          id: user.id,
-          name: user.name
-        },
+        user
       },
     });
   }
@@ -67,14 +64,12 @@ export const login = catchAsync(
       return next(new AppError(`Wrong Email or Password`, 404));
     }
     const token = generateToken(user.id);
+    const newuser = await getUser(user.id) ; 
     console.log("\n Login token has been issued\n");
     res.status(200).json({
       status: "Success",
       token,
-      data: {
-        id: user.id,
-        name: user.name
-      },
+      data: newuser
     });
   }
 );
@@ -140,21 +135,7 @@ export const protectRoute = catchAsync(
   }
 );
 
-// STEPS OF USER RESETTING PASSWORD FLOW  
-/**
- * user makes a post request on the forgot password link on the frontend
- * enters his email to check if the user already exists in the database or not 
- * user recieves an email containing the reset-token 
- * user adds the resets token in the input field
- * We check if the added reset token is the same as the one the existed user has in his records
- * if valid: 
- *  2 input fields for entering the password and confirming it
- * if not : 
- *  user doesn't have an account and redirected to the signup page in the frontend (Handeled by the front end)
- */
 
-
-//INCOMPLETE implement the rest of this function
 export const forgotPassword = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
     const { email } = { ...req.body };
@@ -249,3 +230,35 @@ export const resetPassword = catchAsync(
     });
   }
 );
+
+
+export const GetMe = catchAsync(
+  async(req: Request , res:Response , next: NextFunction) => {
+    if(!req.headers || !req.headers.authorization){
+      return next(new AppError('This route should be protected' , 403));
+    }
+    const token = req.headers.authorization.split(" ")[1] ; 
+    if(!token){
+      return next(new AppError(`There  is no token, please login again!` , 403));
+    }
+    // Verify the token
+    let payload: any = {};
+    const verify_token = promisify(jwt.verify) as (token: string , secret: jwt.Secret) => Promise<any>; 
+    try {
+      const verified_token_data = await verify_token(token , process.env.JWT_SECRET as jwt.Secret)
+      payload = verified_token_data;
+    } catch (error) {
+      return next(
+        new AppError(
+          "Gotcha mother fucker, Go Login or make an account!!!",
+          401
+        )
+      );
+    }
+    const user = await getUser(payload.id);
+    res.status(200).json({
+      status : "success",
+      data: user
+    })
+  }
+)

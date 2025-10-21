@@ -6,7 +6,6 @@ import { CreateMenuItemInput } from "./menuitem.schema";
 
 export const CreateMenuItemService = async(data: CreateMenuItemInput) : Promise<MenuItem>=>{
     const item_slug = slugify(data.name , {lower: true , trim: true}) ; 
-    data.slug = item_slug ; 
     const {chef_id , ...rest} = data ; 
     const prismadata: Prisma.MenuItemCreateInput = {
         ...rest , 

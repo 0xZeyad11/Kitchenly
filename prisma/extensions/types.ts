@@ -8,3 +8,4 @@ export type ExtensionContext<T = any> = {
 }
 
 export type UserUpdateArgs = Prisma.UserUpdateArgs ; 
+export type MenuCreateArgs  = Prisma.MenuItemCreateInput ; 
