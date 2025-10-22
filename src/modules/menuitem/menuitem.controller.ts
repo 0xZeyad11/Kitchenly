@@ -4,7 +4,7 @@ import {
   updateMenuItem,
   getMenuItem,
   getAllMenuItemsAdmin,
-  getMenuItemBySlug
+  getMenuItemBySlug,
 } from "./menuitem.repository";
 import { buildPrismaQuery } from "../../common/utils/queryBuilder";
 import { catchAsync } from "../../common/utils/catchAsync";
@@ -13,13 +13,15 @@ import { MenuItemSchema, UpdateMenuSchema } from "./menuitem.schema";
 import AppError from "../../common/utils/AppError";
 import { CreateMenuItemService } from "./menuitem.service";
 import { Role } from "@prisma/client";
+import { apiResponse } from "../../common/utils/ApiResponse";
+import { sendZodError } from "../../common/middelware/errorhandler.middleware";
 
 export const CreateNewItem = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
     let chefid = "";
     if (!req.user) {
       return next(
-        new AppError("There is no logged in user to complete this action", 401)
+        new AppError("There is no logged in user to complete this action", 401),
       );
     }
     if (req.user.role === Role.CHEF) {
@@ -28,12 +30,12 @@ export const CreateNewItem = catchAsync(
       chefid = req.body.chefid;
     } else {
       return next(
-        new AppError(`You aren't authorized to perform this action`, 401)
+        new AppError(`You aren't authorized to perform this action`, 401),
       );
     }
     if (!chefid) {
       return next(
-        new AppError(`There is no chef id associated with this item`, 404)
+        new AppError(`There is no chef id associated with this item`, 404),
       );
     }
     const rawdata = { chef_id: chefid, ...req.body };
@@ -43,11 +45,8 @@ export const CreateNewItem = catchAsync(
     }
     const data = parsed.data;
     const item = await CreateMenuItemService(data);
-    res.status(200).json({
-      status: "Success",
-      data: item,
-    });
-  }
+    apiResponse(res, "success", 200, item);
+  },
 );
 
 export const DeleteMenuItem = catchAsync(
@@ -56,18 +55,19 @@ export const DeleteMenuItem = catchAsync(
     let chefid;
     if (!req.user) {
       return next(
-        new AppError(`There is no chef associated with this item`, 404)
+        new AppError(`There is no chef associated with this item`, 404),
       );
     } else if (req.user.role === Role.CHEF) {
       chefid = req.user.id;
+      console.log("Current user: ", req.user.id);
     } else if (req.user.role === Role.ADMIN) {
       chefid = req.body.chefid;
       if (!chefid) {
         return next(
           new AppError(
             `since you are an admin provide chef id in the request body as <chefid>`,
-            400
-          )
+            400,
+          ),
         );
       }
     }
@@ -76,11 +76,8 @@ export const DeleteMenuItem = catchAsync(
       return next(new AppError("Could not find this item for deleting!!", 404));
     }
     await deleteMenuItem(finditem.id);
-    res.status(204).json({
-      status: "Success",
-      message: "Item has been deleted successfully!",
-    });
-  }
+    apiResponse(res, "success", 204);
+  },
 );
 
 export const GetMenuItemByID = catchAsync(
@@ -94,11 +91,8 @@ export const GetMenuItemByID = catchAsync(
     if (!finditem) {
       return next(new AppError("Could not find this item for deleting!!", 404));
     }
-    res.status(200).json({
-      status: "Success",
-      data: finditem,
-    });
-  }
+    apiResponse(res, "success", 200, finditem);
+  },
 );
 
 export const GetAllMenuItems = catchAsync(
@@ -110,18 +104,19 @@ export const GetAllMenuItems = catchAsync(
     }
     if (req.user?.role === Role.CHEF) {
       chefid = req.user.id;
-    } else if (
-      req.user.role === Role.ADMIN 
-    ) {
+    } else if (req.user.role === Role.ADMIN) {
       chefid = req.params.chefid;
     }
     const allMenuItems = await getAllMenuItems(options, chefid);
-    res.status(200).json({
-      status: "Success",
-      length: allMenuItems.length,
-      data: allMenuItems,
-    });
-  }
+    apiResponse(
+      res,
+      "success",
+      200,
+      allMenuItems,
+      undefined,
+      allMenuItems.length,
+    );
+  },
 );
 
 export const UpdateMenuItem = catchAsync(
@@ -129,38 +124,42 @@ export const UpdateMenuItem = catchAsync(
     const id = req.params.id;
     let filtereddata;
     let chiefid;
-    if (req.body.chief_id) {
-      const { chief_id, ...rest } = req.body;
-      filtereddata = rest;
-      chiefid = chief_id;
-    }
-    const validData = UpdateMenuSchema.safeParse(filtereddata);
+    // if (req.body.chief_id) {
+    //   const { chief_id, ...rest } = req.body;
+    //   filtereddata = rest;
+    //   chiefid = chief_id;
+    // }
+    const validData = UpdateMenuSchema.safeParse(req.body);
     if (!validData.success) {
-      return next(new AppError(`Invalid data for updating the menu item`, 400));
+      return next(sendZodError(validData.error));
     }
-    const finditem = await getMenuItem(id, chiefid);
+    if (!req.user) {
+      return next(
+        new AppError("Please login inorder to complete this action!", 403),
+      );
+    } else if (req.user.role !== Role.CHEF) {
+      return next(
+        new AppError("You arenot authorized to do this action !!", 403),
+      );
+    }
+    const finditem = await getMenuItem(id, req.user.id);
     if (!finditem) {
       return next(new AppError("Can not find this item!!", 404));
     }
     const updateItem = await updateMenuItem(validData.data, id);
-    res.status(200).json({
-      status: "success",
-      data: updateItem,
-    });
-  }
+    apiResponse(res, "success", 200, updateItem);
+  },
 );
 
 export const GetAllMenuItemsAdmin = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
     const options = buildPrismaQuery(req.query);
     const data = await getAllMenuItemsAdmin(options);
-    res.status(200).json({
-      status: "success",
-      data,
-    });
-  }
+    apiResponse(res, "success", 200, data, undefined, data.length);
+  },
 );
 
+// TODO : Fix this Implementation
 export const GetAllMenuItemsBySlug = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
     const item_name = req.params.item_name;
@@ -171,11 +170,7 @@ export const GetAllMenuItemsBySlug = catchAsync(
     if (!item) {
       return next(new AppError(`Couldn't find this item`, 404));
     }
-    res.status(200).json({
-      status: "success",
-      data: {
-        item,
-      },
-    });
-  }
+
+    apiResponse(res, "success", 200, item);
+  },
 );

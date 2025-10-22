@@ -12,6 +12,7 @@ import restrictTo from "../../common/middelware/restrictTo";
 
 const router = Router();
 
+router.route("/public/:chefid").get(protectRoute, GetAllMenuItems);
 //ADMIN ONLY ROUTE
 router
   .route("/admin")
@@ -23,15 +24,11 @@ router
   .post(protectRoute, restrictTo(Role.ADMIN, Role.CHEF), CreateNewItem)
   .get(protectRoute, restrictTo(Role.ADMIN, Role.CHEF), GetAllMenuItems);
 
+// PUBLIC  //
+///////////////////////////////////////////////////////////
 router
   .route("/:id")
   .patch(protectRoute, restrictTo(Role.ADMIN, Role.CHEF), UpdateMenuItem)
   .delete(protectRoute, restrictTo(Role.ADMIN, Role.CHEF), DeleteMenuItem);
-
-///////////////////////////////////////////////////////////
-
-// PUBLIC  //
-
-router.route("/public/:chefid").get(protectRoute, GetAllMenuItems);
 
 export default router;

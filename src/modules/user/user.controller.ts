@@ -11,10 +11,8 @@ import { UpdateUserInput } from "./user.schema";
 import { catchAsync } from "../../common/utils/catchAsync";
 import AppError from "../../common/utils/AppError";
 import { buildPrismaQuery } from "../../common/utils/queryBuilder";
-import bcrypt from "bcrypt";
-import { FilterObject } from "../../utils/filterObject";
-import { apiResponse } from "../../utils/ApiResponse";
-import { success } from "zod";
+import { FilterObject } from "../../common/utils/filterObject";
+import { apiResponse } from "../../common/utils/ApiResponse";
 
 export const GetAllUsers = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
@@ -93,11 +91,7 @@ export const GetAllCustomers = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
     const options = buildPrismaQuery(req.query);
     const customers = await getAllCustomers(options);
-    res.status(200).json({
-      status: "success",
-      length: customers.length,
-      data: customers,
-    });
+    apiResponse(res, "success", 200, customers, undefined, customers.length);
   },
 );
 
@@ -107,5 +101,6 @@ export const Logout = catchAsync(
       status: "success",
       message: "Loged out successfully",
     });
+    apiResponse(res, "success", 200, undefined, undefined, undefined);
   },
 );

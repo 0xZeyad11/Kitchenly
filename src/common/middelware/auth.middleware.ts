@@ -1,7 +1,7 @@
 import { Response, Request, NextFunction } from "express";
 import { promisify } from "util";
 import jwt, { SigningKeyCallback } from "jsonwebtoken";
-import bcrypt from 'bcrypt';
+import bcrypt from "bcrypt";
 import { catchAsync } from "../utils/catchAsync";
 import {
   AddPasswordResetToken,
@@ -9,16 +9,20 @@ import {
   VerifyPassword,
 } from "../../modules/user/user.service";
 import AppError from "../utils/AppError";
-import { createUserSchema , emailOnlySchema, UpdateUserInput , UserPartialType } from "../../modules/user/user.schema";
+import {
+  createUserSchema,
+  emailOnlySchema,
+  UpdateUserInput,
+  UserPartialType,
+} from "../../modules/user/user.schema";
 import {
   getUser,
   getUserByEmailAuth,
   updateUser,
 } from "../../modules/user/user.repository";
-import sendEmail from "../../utils/sendEmail";
+import sendEmail from "../utils/sendEmail";
 import prisma from "../../../prisma/db";
-import crypto from 'crypto'
-
+import crypto from "crypto";
 
 export const generateToken = (id: string): string => {
   const Secret = process.env.JWT_SECRET as string;
@@ -47,10 +51,10 @@ export const signup = catchAsync(
       status: "success",
       token,
       data: {
-        user
+        user,
       },
     });
-  }
+  },
 );
 
 export const login = catchAsync(
@@ -64,14 +68,14 @@ export const login = catchAsync(
       return next(new AppError(`Wrong Email or Password`, 404));
     }
     const token = generateToken(user.id);
-    const newuser = await getUser(user.id) ; 
+    const newuser = await getUser(user.id);
     console.log("\n Login token has been issued\n");
     res.status(200).json({
       status: "Success",
       token,
-      data: newuser
+      data: newuser,
     });
-  }
+  },
 );
 
 export const protectRoute = catchAsync(
@@ -89,16 +93,22 @@ export const protectRoute = catchAsync(
 
     // Verify the token
     let payload: any = {};
-    const verify_token = promisify(jwt.verify) as (token: string , secret: jwt.Secret) => Promise<any>; 
+    const verify_token = promisify(jwt.verify) as (
+      token: string,
+      secret: jwt.Secret,
+    ) => Promise<any>;
     try {
-      const verified_token_data = await verify_token(token , process.env.JWT_SECRET as jwt.Secret)
+      const verified_token_data = await verify_token(
+        token,
+        process.env.JWT_SECRET as jwt.Secret,
+      );
       payload = verified_token_data;
     } catch (error) {
       return next(
         new AppError(
           "Gotcha mother fucker, Go Login or make an account!!!",
-          401
-        )
+          401,
+        ),
       );
     }
 
@@ -116,30 +126,32 @@ export const protectRoute = catchAsync(
     if (passwordupdatedat) {
       passwordupdatedat = new Date(passwordupdatedat);
       const pass_time = Math.floor(passwordupdatedat.getTime() / 1000);
-      const token_time = payload.iat ; 
+      const token_time = payload.iat;
       if (pass_time > token_time) {
         console.log(
           "\n\nPassword changed at: ",
           pass_time,
           "  \n\n\n user issued token at : ",
-          token_time
+          token_time,
         );
         return next(
-          new AppError(`Password has recently changed, please login again`, 401)
+          new AppError(
+            `Password has recently changed, please login again`,
+            401,
+          ),
         );
       }
     }
 
     req.user = finduser;
     next();
-  }
+  },
 );
-
 
 export const forgotPassword = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
     const { email } = { ...req.body };
-    const validdata = emailOnlySchema.safeParse({email});
+    const validdata = emailOnlySchema.safeParse({ email });
     if (!validdata.success) {
       return next(new AppError(`${validdata.error.message}`, 400));
     }
@@ -150,9 +162,9 @@ export const forgotPassword = catchAsync(
 
     const reset_token = await AddPasswordResetToken(finduser.id);
     const reset_url = `${req.protocol}://${req.get(
-      "host"
+      "host",
     )}/api/v1/users/resetPassword/${reset_token}`;
-    const message = `Forgot your password?, Please make a PATCH request with your new password and confirm your password on the url: ${reset_url}\nIf you didn't forget 
+    const message = `Forgot your password?, Please make a PATCH request with your new password and confirm your password on the url: ${reset_url}\nIf you didn't forget
     your password, Please Ignore this email!`;
 
     try {
@@ -174,15 +186,15 @@ export const forgotPassword = catchAsync(
           passwordResetTokenExpiry: null,
         },
       });
-      const err  = error as Error; 
+      const err = error as Error;
       return next(
         new AppError(
           `Something went wrong when sending the token to the user email || ${err.message}`,
-          500
-        )
+          500,
+        ),
       );
     }
-  }
+  },
 );
 
 export const resetPassword = catchAsync(
@@ -200,7 +212,7 @@ export const resetPassword = catchAsync(
     });
     if (!user) {
       return next(
-        new AppError(`Can't find this user, maybe the token has expired`, 404)
+        new AppError(`Can't find this user, maybe the token has expired`, 404),
       );
     }
     let { password } = req.body;
@@ -210,55 +222,60 @@ export const resetPassword = catchAsync(
     }
     const newpassword = await bcrypt.hash(
       validpassword.data.password as string,
-      Number(process.env.SALT) || 10
+      Number(process.env.SALT) || 10,
     );
 
     const user_with_new_password = await updateUser(user.id, {
       password: newpassword,
       passwordUpdatedAt: new Date(Date.now()),
-      passwordResetToken: null, 
-      passwordResetTokenExpiry: null 
+      passwordResetToken: null,
+      passwordResetTokenExpiry: null,
     });
 
-    const token = generateToken(user_with_new_password.id) ; 
-    req.user = user_with_new_password ; 
+    const token = generateToken(user_with_new_password.id);
+    req.user = user_with_new_password;
     res.status(200).json({
       status: "success",
       message: "user password updated",
-      token ,
+      token,
       data: user_with_new_password,
     });
-  }
+  },
 );
 
-
 export const GetMe = catchAsync(
-  async(req: Request , res:Response , next: NextFunction) => {
-    if(!req.headers || !req.headers.authorization){
-      return next(new AppError('This route should be protected' , 403));
+  async (req: Request, res: Response, next: NextFunction) => {
+    if (!req.headers || !req.headers.authorization) {
+      return next(new AppError("This route should be protected", 403));
     }
-    const token = req.headers.authorization.split(" ")[1] ; 
-    if(!token){
-      return next(new AppError(`There  is no token, please login again!` , 403));
+    const token = req.headers.authorization.split(" ")[1];
+    if (!token) {
+      return next(new AppError(`There  is no token, please login again!`, 403));
     }
     // Verify the token
     let payload: any = {};
-    const verify_token = promisify(jwt.verify) as (token: string , secret: jwt.Secret) => Promise<any>; 
+    const verify_token = promisify(jwt.verify) as (
+      token: string,
+      secret: jwt.Secret,
+    ) => Promise<any>;
     try {
-      const verified_token_data = await verify_token(token , process.env.JWT_SECRET as jwt.Secret)
+      const verified_token_data = await verify_token(
+        token,
+        process.env.JWT_SECRET as jwt.Secret,
+      );
       payload = verified_token_data;
     } catch (error) {
       return next(
         new AppError(
           "Gotcha mother fucker, Go Login or make an account!!!",
-          401
-        )
+          401,
+        ),
       );
     }
     const user = await getUser(payload.id);
     res.status(200).json({
-      status : "success",
-      data: user
-    })
-  }
-)
+      status: "success",
+      data: user,
+    });
+  },
+);
