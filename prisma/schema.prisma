@@ -13,73 +13,77 @@ datasource db {
   url      = "postgresql://postgres:zizo18889@localhost:5432/Kitchenly"
 }
 
-model User{
-  id String @id @default(cuid())
-  name String 
-  email String @unique
-  password String
-  nationalId String?
-  age Int?
-  lng Float?
-  lat Float?
-  role Role @default(CUSTOMER)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt 
-  passwordUpdatedAt DateTime?
-  passwordResetToken String? @unique
+model User {
+  id                       String     @id @default(cuid())
+  name                     String
+  email                    String     @unique
+  password                 String
+  nationalId               String?
+  age                      Int?
+  lng                      Float?
+  lat                      Float?
+  role                     Role       @default(CUSTOMER)
+  createdAt                DateTime   @default(now())
+  updatedAt                DateTime   @updatedAt
+  passwordUpdatedAt        DateTime?
+  passwordResetToken       String?    @unique
   passwordResetTokenExpiry DateTime?
-  menuItems MenuItem[]
-  customerOrders Order[] @relation("CustomerOrders")
-  chefOrders Order[] @relation("ChefOrders")
+  menuItems                MenuItem[]
+  customerOrders           Order[]    @relation("CustomerOrders")
+  chefOrders               Order[]    @relation("ChefOrders")
 }
 
-model MenuItem{
-  id String @id @default(cuid())
-  name String
+model MenuItem {
+  id          String   @id @default(cuid())
+  name        String
   description String
-  price Float
-  foodType FoodType
-  itemType ItemType
-  chef_id String 
-  slug String?
-  chef User @relation(fields: [chef_id] , references: [id], onDelete: Cascade ) 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  
+  price       Float
+  foodType    FoodType
+  itemType    ItemType
+  chef_id     String
+  slug        String?
+  chef        User     @relation(fields: [chef_id], references: [id], onDelete: Cascade)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
   orderitem OrderItem[]
 }
 
 //TODO add location_from and location_to
-model Order{
-  id String @id @default(cuid())
-  customer_id String 
-  customer User @relation("CustomerOrders",fields: [customer_id] , references: [id], onDelete: Cascade)
-  chef_id  String
-  chef User @relation("ChefOrders",fields: [chef_id] , references: [id], onDelete: Cascade)
+model Order {
+  id           String      @id @default(cuid())
+  customer_id  String
+  customer     User        @relation("CustomerOrders", fields: [customer_id], references: [id], onDelete: Cascade)
+  chef_id      String
+  chef         User        @relation("ChefOrders", fields: [chef_id], references: [id], onDelete: Cascade)
   order_status OrderStatus @default(PENDING)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  orderitems OrderItem[]
-  total_price Float
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+  orderitems   OrderItem[]
+  total_price  Float
+
   @@index([customer_id])
   @@index([chef_id])
 }
-model OrderItem{
-  id String @id @default(cuid())
-  order_id String
-  order Order @relation(fields: [order_id],references: [id], onDelete: Cascade)
-  menuitem_id String 
-  menuitem MenuItem @relation(fields: [menuitem_id],references: [id], onDelete: Cascade)  
-  quantity Int
-  item_price Float
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+
+model OrderItem {
+  id          String   @id @default(cuid())
+  order_id    String
+  order       Order    @relation(fields: [order_id], references: [id], onDelete: Cascade)
+  menuitem_id String
+  menuitem    MenuItem @relation(fields: [menuitem_id], references: [id], onDelete: Cascade)
+  quantity    Int
+  item_price  Float
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 }
-enum Role {   
+
+enum Role {
   ADMIN
-  CHEF 
+  CHEF
   CUSTOMER
 }
+
 enum FoodType {
   MIDDLE_EASTERN
   LEBANESE
@@ -143,14 +147,18 @@ enum FoodType {
   DESSERT
   SNACK
 }
+
 enum ItemType {
   MAINDISH
-  DRINK 
+  DRINK
   DESSERT
   BEVERAGE
 }
+
 enum OrderStatus {
   PENDING
+  ACCEPTED
+  DECLINED
   COOKING
   DONE
 }

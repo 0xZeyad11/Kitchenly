@@ -12,12 +12,23 @@ export async function createOrderItem(
   }
 }
 
+export async function createOrderItems(
+  data: Prisma.OrderItemCreateManyInput[],
+): Promise<{ count: number }> {
+  return await prisma.orderItem.createMany({ data });
+}
+
 export async function updateOrderItem(
   data: Prisma.OrderItemUpdateInput,
   id: string,
 ): Promise<OrderItem> {
   try {
-    return await prisma.orderItem.update({ data, where: { id } });
+    const { quantity } = data;
+
+    return await prisma.orderItem.update({
+      where: { id },
+      data: { quantity: quantity },
+    });
   } catch (error) {
     throw sendPrismaError(error);
   }
