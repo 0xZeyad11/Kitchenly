@@ -1,27 +1,28 @@
-import { Order } from "@prisma/client";
+import { Prisma, Order } from "@prisma/client";
 import { sendPrismaError } from "../../common/middelware/errorhandler.middleware";
 import prisma from "../../../prisma/db";
 import AppError from "../../common/utils/AppError";
 
-type orderItemInput = {
+export type orderItemInput = {
   menuitem_id: string;
   quantity: number;
   item_price: number;
 };
 
+export type FullOrder = Prisma.OrderGetPayload<{
+  include: {
+    orderitems: {
+      include: { menuitem: true };
+    };
+  };
+}>;
+
 export async function createNewOrder(
   userid: string,
   chefid: string,
   items: orderItemInput[],
-): Promise<Order> {
+): Promise<FullOrder> {
   try {
-    if (!items || items.length === 0) {
-      throw new AppError(
-        "You must have at least one item in order to create an order",
-        400,
-      );
-    }
-
     return await prisma.$transaction(async (tx) => {
       const order = await tx.order.create({
         data: {
@@ -60,7 +61,7 @@ export async function createNewOrder(
   }
 }
 
-export async function DeleteOrder(id: string) {
+export async function deleteOrder(id: string) {
   try {
     await prisma.order.delete({ where: { id } });
   } catch (error) {
@@ -70,7 +71,7 @@ export async function DeleteOrder(id: string) {
 
 export async function GetOrderById(id: string): Promise<Order | null> {
   try {
-    return await prisma.order.findFirstOrThrow({
+    return await prisma.order.findUniqueOrThrow({
       where: { id },
       include: {
         orderitems: {
@@ -79,6 +80,16 @@ export async function GetOrderById(id: string): Promise<Order | null> {
         customer: true,
         chef: true,
       },
+    });
+  } catch (error) {
+    throw sendPrismaError(error);
+  }
+}
+export async function getAllOrders(userid: string): Promise<FullOrder[]> {
+  try {
+    return await prisma.order.findMany({
+      where: { customer_id: userid },
+      include: { orderitems: { include: { menuitem: true } } },
     });
   } catch (error) {
     throw sendPrismaError(error);

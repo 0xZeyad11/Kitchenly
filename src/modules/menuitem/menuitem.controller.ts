@@ -98,13 +98,17 @@ export const GetMenuItemByID = catchAsync(
 export const GetAllMenuItems = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
     const options = buildPrismaQuery(req.query);
+
     let chefid = "";
     if (!req.user) {
       return next(new AppError(`There is no authenticated user`, 401));
     }
     if (req.user?.role === Role.CHEF) {
       chefid = req.user.id;
-    } else if (req.user.role === Role.ADMIN) {
+    } else if (
+      req.user.role === Role.ADMIN ||
+      req.user.role === Role.CUSTOMER
+    ) {
       chefid = req.params.chefid;
     }
     const allMenuItems = await getAllMenuItems(options, chefid);

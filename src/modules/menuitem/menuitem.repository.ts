@@ -14,7 +14,7 @@ export async function createMenuItem(
 
 export async function updateMenuItem(
   data: Prisma.MenuItemUpdateInput,
-  id: string
+  id: string,
 ): Promise<MenuItem> {
   try {
     return await prisma.menuItem.update({ where: { id }, data });
@@ -33,18 +33,18 @@ export async function deleteMenuItem(id: string) {
 
 export async function getMenuItem(
   id: string,
-  chiefid: string
+  chiefid: string,
 ): Promise<MenuItem | null> {
   try {
     return await prisma.menuItem.findUniqueOrThrow({
       where: { id: id, chef_id: chiefid },
-      include:{
-        chef:{
+      include: {
+        chef: {
           select: {
-            name: true , 
-          }
-        }
-      }
+            name: true,
+          },
+        },
+      },
     });
   } catch (error) {
     throw sendPrismaError(error);
@@ -52,51 +52,63 @@ export async function getMenuItem(
 }
 
 export async function getAllMenuItems(
-  options: Prisma.MenuItemFindManyArgs, 
-  chiefid: string
+  options: Prisma.MenuItemFindManyArgs,
+  chiefid: string,
 ): Promise<MenuItem[]> {
   try {
     return await prisma.menuItem.findMany({
       ...options,
-      where:{chef_id: chiefid},
+      where: { chef_id: chiefid },
+      include: {
+        chef: {
+          select: {
+            name: true,
+            id: true,
+          },
+        },
+      },
     });
   } catch (error) {
     throw sendPrismaError(error);
   }
 }
 
-
 export async function getAllMenuItemsAdmin(
   options: Prisma.MenuItemFindManyArgs,
-): Promise<MenuItem[]>{
+): Promise<MenuItem[]> {
   try {
     return await prisma.menuItem.findMany({
-      ...options , 
-      include:{
+      ...options,
+      include: {
         chef: {
-          select:{
-            name: true, 
-            email: true, 
-            id: true
-          }
-        }
+          select: {
+            name: true,
+            email: true,
+            id: true,
+          },
+        },
       },
-      
-    }) 
+    });
   } catch (error) {
-   throw sendPrismaError(error); 
+    throw sendPrismaError(error);
   }
 }
 
-export async function getMenuItemBySlug(slug: string): Promise<MenuItem | null>{
+export async function getMenuItemBySlug(
+  slug: string,
+): Promise<MenuItem | null> {
   try {
-   return await prisma.menuItem.findFirstOrThrow({where:{slug} , include:{chef:{
-    select:{
-      name: true
-    }
-   }
-   }}) 
+    return await prisma.menuItem.findFirstOrThrow({
+      where: { slug },
+      include: {
+        chef: {
+          select: {
+            name: true,
+          },
+        },
+      },
+    });
   } catch (error) {
-   throw sendPrismaError(error); 
+    throw sendPrismaError(error);
   }
 }
