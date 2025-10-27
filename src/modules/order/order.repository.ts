@@ -2,6 +2,7 @@ import { Prisma, Order } from "@prisma/client";
 import { sendPrismaError } from "../../common/middelware/errorhandler.middleware";
 import prisma from "../../../prisma/db";
 import AppError from "../../common/utils/AppError";
+import { handleOrderCreatedSocket } from "./order.socket";
 
 export type orderItemInput = {
   menuitem_id: string;
@@ -54,6 +55,8 @@ export async function createNewOrder(
           },
         },
       });
+      // Starting a socket between the chef and the user on order creation
+      handleOrderCreatedSocket(userid, chefid, fullorder);
       return fullorder;
     });
   } catch (error) {
@@ -90,6 +93,21 @@ export async function getAllOrders(userid: string): Promise<FullOrder[]> {
     return await prisma.order.findMany({
       where: { customer_id: userid },
       include: { orderitems: { include: { menuitem: true } } },
+    });
+  } catch (error) {
+    throw sendPrismaError(error);
+  }
+}
+
+export async function getAllOrdersChef(chefid: string): Promise<FullOrder[]> {
+  try {
+    return await prisma.order.findMany({
+      where: { chef_id: chefid },
+      include: {
+        orderitems: { include: { menuitem: true } },
+        customer: { select: { id: true, name: true, email: true } },
+      },
+      orderBy: { createdAt: "desc" },
     });
   } catch (error) {
     throw sendPrismaError(error);

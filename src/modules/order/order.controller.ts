@@ -1,10 +1,13 @@
 import { Response, Request, NextFunction } from "express";
 import { catchAsync } from "../../common/utils/catchAsync";
-import { deleteOrder, getAllOrders } from "./order.repository";
+import {
+  deleteOrder,
+  getAllOrders,
+  getAllOrdersChef,
+} from "./order.repository";
 import AppError from "../../common/utils/AppError";
 import { CreateOrderService } from "./order.service";
 import { apiResponse } from "../../common/utils/ApiResponse";
-import { getAllCustomers } from "../user/user.repository";
 
 export const CreateNewOrder = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
@@ -40,7 +43,7 @@ export const DeleteOrder = catchAsync(
       );
     }
     const deletedOrder = await deleteOrder(id);
-    apiResponse(res, "success", 402);
+    apiResponse(res, "success", 204);
   },
 );
 
@@ -56,6 +59,22 @@ export const GetAllOrders = catchAsync(
     }
     const userid = req.user.id;
     const my_orders = await getAllOrders(userid);
+    apiResponse(res, "success", 200, my_orders, undefined, my_orders.length);
+  },
+);
+
+export const GetAllOrdersChef = catchAsync(
+  async (req: Request, res: Response, next: NextFunction) => {
+    if (!req.user) {
+      return next(
+        new AppError(
+          "There is error fetching your id, please login again!",
+          403,
+        ),
+      );
+    }
+    const userid = req.user.id;
+    const my_orders = await getAllOrdersChef(userid);
     apiResponse(res, "success", 200, my_orders, undefined, my_orders.length);
   },
 );
