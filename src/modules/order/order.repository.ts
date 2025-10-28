@@ -1,8 +1,7 @@
 import { Prisma, Order } from "@prisma/client";
 import { sendPrismaError } from "../../common/middelware/errorhandler.middleware";
 import prisma from "../../../prisma/db";
-import AppError from "../../common/utils/AppError";
-import { handleOrderCreatedSocket } from "./order.socket";
+import { emitOrderCreated } from "./order.socket";
 
 export type orderItemInput = {
   menuitem_id: string;
@@ -56,7 +55,7 @@ export async function createNewOrder(
         },
       });
       // Starting a socket between the chef and the user on order creation
-      handleOrderCreatedSocket(userid, chefid, fullorder);
+      emitOrderCreated(userid, chefid, fullorder);
       return fullorder;
     });
   } catch (error) {

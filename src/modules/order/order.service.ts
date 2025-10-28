@@ -2,6 +2,7 @@ import { sendPrismaError } from "../../common/middelware/errorhandler.middleware
 import AppError from "../../common/utils/AppError";
 import { createNewOrder, FullOrder, orderItemInput } from "./order.repository";
 import prisma from "../../../prisma/db";
+import { OrderStatus } from "@prisma/client";
 
 export const CreateOrderService = async (
   userid: string,
@@ -19,6 +20,20 @@ export const CreateOrderService = async (
       where: { id: userid },
     });
     return await createNewOrder(userid, chefid, items);
+  } catch (error) {
+    throw sendPrismaError(error);
+  }
+};
+
+export const UpdateOrderStatusService = async (
+  orderid: string,
+  status: OrderStatus,
+) => {
+  try {
+    return await prisma.order.update({
+      where: { id: orderid },
+      data: { order_status: status },
+    });
   } catch (error) {
     throw sendPrismaError(error);
   }

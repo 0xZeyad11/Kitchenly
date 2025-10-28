@@ -1,6 +1,7 @@
 import { Server } from "socket.io";
 import http from "http";
 import AppError from "./common/utils/AppError";
+import { handleOrderCreatedResponse } from "./modules/order/order.socket";
 
 let io: Server;
 
@@ -41,6 +42,7 @@ export const initSocket = (server: http.Server) => {
       }
     });
     //TODO  add the socket handlers here
+    handleOrderCreatedResponse(io, socket);
   });
 };
 
