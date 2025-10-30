@@ -1,9 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -14,53 +8,52 @@ datasource db {
 }
 
 model User {
-  id                       String     @id @default(cuid())
+  id                       String                   @id @default(cuid())
   name                     String
-  email                    String     @unique
+  email                    String                   @unique
   password                 String
   nationalId               String?
   age                      Int?
   lng                      Float?
   lat                      Float?
-  role                     Role       @default(CUSTOMER)
-  createdAt                DateTime   @default(now())
-  updatedAt                DateTime   @updatedAt
+  role                     Role                     @default(CUSTOMER)
+  createdAt                DateTime                 @default(now())
+  updatedAt                DateTime                 @updatedAt
   passwordUpdatedAt        DateTime?
-  passwordResetToken       String?    @unique
+  passwordResetToken       String?                  @unique
   passwordResetTokenExpiry DateTime?
+  location                 Unsupported("geometry")?
   menuItems                MenuItem[]
-  customerOrders           Order[]    @relation("CustomerOrders")
-  chefOrders               Order[]    @relation("ChefOrders")
+  chefOrders               Order[]                  @relation("ChefOrders")
+  customerOrders           Order[]                  @relation("CustomerOrders")
 }
 
 model MenuItem {
-  id          String   @id @default(cuid())
+  id          String      @id @default(cuid())
   name        String
   description String
   price       Float
   foodType    FoodType
   itemType    ItemType
   chef_id     String
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
   slug        String?
-  chef        User     @relation(fields: [chef_id], references: [id], onDelete: Cascade)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-
-  orderitem OrderItem[]
+  chef        User        @relation(fields: [chef_id], references: [id], onDelete: Cascade)
+  orderitem   OrderItem[]
 }
 
-//TODO add location_from and location_to
 model Order {
   id           String      @id @default(cuid())
   customer_id  String
-  customer     User        @relation("CustomerOrders", fields: [customer_id], references: [id], onDelete: Cascade)
   chef_id      String
-  chef         User        @relation("ChefOrders", fields: [chef_id], references: [id], onDelete: Cascade)
   order_status OrderStatus @default(PENDING)
   createdAt    DateTime    @default(now())
   updatedAt    DateTime    @updatedAt
-  orderitems   OrderItem[]
   total_price  Float
+  chef         User        @relation("ChefOrders", fields: [chef_id], references: [id], onDelete: Cascade)
+  customer     User        @relation("CustomerOrders", fields: [customer_id], references: [id], onDelete: Cascade)
+  orderitems   OrderItem[]
 
   @@index([customer_id])
   @@index([chef_id])
@@ -69,13 +62,22 @@ model Order {
 model OrderItem {
   id          String   @id @default(cuid())
   order_id    String
-  order       Order    @relation(fields: [order_id], references: [id], onDelete: Cascade)
   menuitem_id String
-  menuitem    MenuItem @relation(fields: [menuitem_id], references: [id], onDelete: Cascade)
   quantity    Int
   item_price  Float
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+  menuitem    MenuItem @relation(fields: [menuitem_id], references: [id], onDelete: Cascade)
+  order       Order    @relation(fields: [order_id], references: [id], onDelete: Cascade)
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model spatial_ref_sys {
+  srid      Int     @id
+  auth_name String? @db.VarChar(256)
+  auth_srid Int?
+  srtext    String? @db.VarChar(2048)
+  proj4text String? @db.VarChar(2048)
 }
 
 enum Role {
@@ -92,26 +94,22 @@ enum FoodType {
   EGYPTIAN
   ARABIAN
   PALESTINIAN
-
   CHINESE
   JAPANESE
   KOREAN
   TAIWANESE
   MONGOLIAN
-
   THAI
   VIETNAMESE
   FILIPINO
   MALAYSIAN
   INDONESIAN
   SINGAPOREAN
-
   INDIAN
   PAKISTANI
   BANGLADESHI
   SRI_LANKAN
   NEPALI
-
   ITALIAN
   FRENCH
   SPANISH
@@ -122,20 +120,17 @@ enum FoodType {
   SCANDINAVIAN
   RUSSIAN
   EASTERN_EUROPEAN
-
   AMERICAN
   CANADIAN
   MEXICAN
   BRAZILIAN
   ARGENTINIAN
   CARIBBEAN
-
   NORTH_AFRICAN
   ETHIOPIAN
   MOROCCAN
   WEST_AFRICAN
   SOUTH_AFRICAN
-
   FAST_FOOD
   VEGAN
   VEGETARIAN
