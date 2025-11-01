@@ -2,3 +2,4 @@ node_modules/
 *.mmd
 .env
 /src/generated/prisma
+*.txt
