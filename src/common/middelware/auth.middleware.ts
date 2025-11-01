@@ -13,7 +13,6 @@ import {
   createUserSchema,
   emailOnlySchema,
   UpdateUserInput,
-  UserPartialType,
 } from "../../modules/user/user.schema";
 import {
   getUser,
@@ -23,6 +22,7 @@ import {
 import sendEmail from "../utils/sendEmail";
 import prisma from "../../../prisma/db";
 import crypto from "crypto";
+import { apiResponse } from "../utils/ApiResponse";
 
 export const generateToken = (id: string): string => {
   const Secret = process.env.JWT_SECRET as string;
@@ -250,7 +250,7 @@ export const GetMe = catchAsync(
     }
     const token = req.headers.authorization.split(" ")[1];
     if (!token) {
-      return next(new AppError(`There  is no token, please login again!`, 403));
+      return apiResponse(res, "failed", 404, undefined, "Can't find this user please login again");
     }
     // Verify the token
     let payload: any = {};

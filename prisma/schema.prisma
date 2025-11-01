@@ -8,29 +8,30 @@ datasource db {
 }
 
 model User {
-  id                       String                   @id @default(cuid())
+  id                       String                                @id @default(cuid())
+  profileImage             String?
   name                     String
-  email                    String                   @unique
+  email                    String                                @unique
   password                 String
   nationalId               String?
+  location                 Unsupported("geography(Point,4326)")?
   age                      Int?
-  lng                      Float?
-  lat                      Float?
-  role                     Role                     @default(CUSTOMER)
-  createdAt                DateTime                 @default(now())
-  updatedAt                DateTime                 @updatedAt
+  role                     Role                                  @default(CUSTOMER)
+  createdAt                DateTime                              @default(now())
+  updatedAt                DateTime                              @updatedAt
   passwordUpdatedAt        DateTime?
-  passwordResetToken       String?                  @unique
+  passwordResetToken       String?                               @unique
   passwordResetTokenExpiry DateTime?
-  location                 Unsupported("geometry")?
-  menuItems                MenuItem[]
-  chefOrders               Order[]                  @relation("ChefOrders")
-  customerOrders           Order[]                  @relation("CustomerOrders")
+
+  menuItems      MenuItem[]
+  chefOrders     Order[]    @relation("ChefOrders")
+  customerOrders Order[]    @relation("CustomerOrders")
 }
 
 model MenuItem {
   id          String      @id @default(cuid())
   name        String
+  image       String?
   description String
   price       Float
   foodType    FoodType
@@ -45,6 +46,7 @@ model MenuItem {
 
 model Order {
   id           String      @id @default(cuid())
+  image        String?
   customer_id  String
   chef_id      String
   order_status OrderStatus @default(PENDING)

@@ -5,6 +5,9 @@ import {
   updateUser,
   getAllChiefs,
   getAllCustomers,
+  getNearbyChefs,
+  setUserLocation,
+  getNearestChef
 } from "./user.repository";
 import { Request, Response, NextFunction } from "express";
 import { UpdateUserInput } from "./user.schema";
@@ -104,3 +107,38 @@ export const Logout = catchAsync(
     apiResponse(res, "success", 200, undefined, undefined, undefined);
   },
 );
+
+export const SetUserLocation = catchAsync(
+  async (req: Request, res: Response, next: NextFunction) => {
+    const userid = req.params.userid;
+    const user = await getUser(userid);
+    if (!user) {
+      return apiResponse(res, "failed", 404, undefined, "can't find this user");
+    }
+    const { lat, lng } = req.body;
+    await setUserLocation(userid, lat, lng);
+    apiResponse(res, "success", 200, undefined, "user location updated successfully");
+  }
+);
+
+export const GetNearestChefs = catchAsync(
+  async (req: Request, res: Response, next: NextFunction) => {
+    const userid = req.params.userid;
+    const { distance, NumberOfChefs } = req.body;
+    const nearestChefs = await getNearestChef(userid, distance, NumberOfChefs);
+    apiResponse(res, "success", 200, nearestChefs, undefined, nearestChefs.length);
+  }
+)
+
+// TODO: Implement this function
+export const GetNearbyChefs = catchAsync(
+  async (req: Request, res: Response, next: NextFunction) => {
+    const userid = req.params.userid;
+    const { distance } = req.body;
+    const near_chefs = await getNearbyChefs(userid, distance);
+    if (!near_chefs || near_chefs.length === 0) {
+      return apiResponse(res, "failed", 404, undefined, "There is no chefs near to your location");
+    }
+    apiResponse(res, "success", 200, near_chefs, undefined, near_chefs.length);
+  }
+)

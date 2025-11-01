@@ -7,6 +7,9 @@ import {
   GetUser,
   Logout,
   UpdateUser,
+  SetUserLocation,
+  GetNearbyChefs,
+  GetNearestChefs
 } from "./user.controller";
 import {
   login,
@@ -20,6 +23,7 @@ import {
 
 import restrictTo from "../../common/middelware/restrictTo";
 import { Role } from "@prisma/client";
+import { setUserLocation } from "./user.repository";
 
 const router = Router();
 
@@ -27,11 +31,14 @@ const router = Router();
 router.route("/").get(protectRoute, restrictTo(Role.ADMIN), GetAllUsers);
 router.route("/signup").post(signup);
 router.route("/login").post(login);
-router.route("/logout").get( Logout);
-router.route("/me").get(protectRoute , GetMe);
+router.route("/logout").get(Logout);
+router.route("/me").get(protectRoute, GetMe);
+
+router.route("/location/:userid").post(SetUserLocation).get(protectRoute, GetNearbyChefs);
+router.route("/location/:userid/nearest").get(protectRoute, GetNearestChefs);
 
 router.route("/forgotpassword").patch(forgotPassword);
-router.route("/resetpassword/:token").patch( resetPassword);
+router.route("/resetpassword/:token").patch(resetPassword);
 
 router.route("/chiefs").get(protectRoute, GetAllChiefs);
 router.route("/customers").get(protectRoute, restrictTo(Role.ADMIN), GetAllCustomers);

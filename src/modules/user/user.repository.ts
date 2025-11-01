@@ -2,6 +2,16 @@ import prisma from "../../../prisma/db";
 import { User, Prisma } from "@prisma/client";
 import { sendPrismaError } from "../../common/middelware/errorhandler.middleware";
 
+
+// User this instead of selecting all data while doing raw queries because location is not supported
+const user_data =
+  ` 
+  u.id , 
+  u.name, 
+  u.age , 
+  u.role , 
+u."createdAt"
+`
 export async function getUserByEmailAuth(data: string): Promise<any> {
   try {
     return await prisma.user.findUniqueOrThrow({
@@ -99,16 +109,15 @@ export async function getNearbyChefs(
     >
       `
 SELECT 
-u.*,
-ST_DistanceSphere(u.location, ref.location) AS distance_meters
+${Prisma.raw(user_data)},
+ST_Distance(u.location, ref.location) AS distance_meters
 FROM "User" u
 JOIN "User" ref ON ref.id = ${userid}
 WHERE u.id <> ref.id
 AND u.role = 'CHEF'
-AND ST_DistanceSphere(u.location, ref.location) <= ${distanceMeters}
+AND ST_Distance(u.location, ref.location) <= ${distanceMeters}
 ORDER BY distance_meters ASC;
 `;
-
     return chefs;
   } catch (error) {
     throw sendPrismaError(error);
@@ -120,7 +129,7 @@ export async function setUserLocation(userid: string, lat: number, lng: number):
     await prisma.$executeRaw
       `
 UPDATE  "User" 
-SET "location" = ST_SetSRID(ST_MakePoint(${lng},${lat}) , 4326)
+SET "location" = ST_SetSRID(ST_MakePoint(${lng},${lat}) , 4326)::geography
 WHERE id = ${userid} ;
 ` ;
   } catch (error) {
@@ -128,20 +137,20 @@ WHERE id = ${userid} ;
   }
 }
 
-export async function getNearstChef(userid: string, distance: number, NumberOfChefs?: number): Promise<User> {
+export async function getNearestChef(userid: string, distance: number, NumberOfChefs?: number): Promise<User[]> {
   try {
     const no_of_chefs = NumberOfChefs === 0 ? 0 : NumberOfChefs;
-    return await prisma.$queryRaw<User>`
+    return await prisma.$queryRaw<User[]>`
 SELECT 
-u.*,
-ST_DistanceSphere(u.location, ref.location) AS distance_meters
+${Prisma.raw(user_data)},
+ST_Distance(u.location, ref.location) AS distance_meters
 FROM "User" u
 JOIN "User" ref ON ref.id = ${userid}
 WHERE u.id <> ref.id
 AND u.role = 'CHEF'
-AND ST_DistanceSphere(u.location, ref.location) <= ${distance}
+AND ST_DWithin(u.location, ref.location , ${distance}) 
 ORDER BY distance_meters ASC
-LIMIT ${no_of_chefs};
+LIMIT ${no_of_chefs ?? 10};
 `
 
   } catch (error) {
