@@ -6,10 +6,10 @@ import { sendPrismaError } from "../../common/middelware/errorhandler.middleware
 // User this instead of selecting all data while doing raw queries because location is not supported
 const user_data =
   ` 
-  u.id , 
-  u.name, 
-  u.age , 
-  u.role , 
+u.id , 
+u.name, 
+u.age , 
+u.role , 
 u."createdAt"
 `
 export async function getUserByEmailAuth(data: string): Promise<any> {
