@@ -1,6 +1,7 @@
 node_modules/
 *.mmd
 .env
+config.env
 /src/generated/prisma
 *.txt
 uploads/
