@@ -8,6 +8,7 @@ export const CreateOrderService = async (
   userid: string,
   chefid: string,
   items: orderItemInput[],
+  image?: string,
 ) => {
   try {
     if (userid === chefid) {
@@ -19,7 +20,7 @@ export const CreateOrderService = async (
     await prisma.user.findUniqueOrThrow({
       where: { id: userid },
     });
-    return await createNewOrder(userid, chefid, items);
+    return await createNewOrder(userid, chefid, items, image);
   } catch (error) {
     throw sendPrismaError(error);
   }

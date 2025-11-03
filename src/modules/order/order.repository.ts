@@ -21,6 +21,7 @@ export async function createNewOrder(
   userid: string,
   chefid: string,
   items: orderItemInput[],
+  image?: string,
 ): Promise<FullOrder> {
   try {
     return await prisma.$transaction(async (tx) => {
@@ -33,6 +34,7 @@ export async function createNewOrder(
             0,
           ),
           order_status: "PENDING",
+          image: image,
         },
       });
 

@@ -20,7 +20,8 @@ export const MenuItemSchema = z.object({
   foodType: z.enum(FoodType).default("ARABIAN"),
   
   itemType: z.enum(ItemType).default("MAINDISH"),
-  slug:z.string().optional(), 
+  slug:z.string().optional(),
+  image: z.string().optional(),
   chef_id: z.string()
     .min(1, "Chief ID is required")
     .regex(/^c[a-z0-9]{24}$/i, "Invalid chief ID format"),

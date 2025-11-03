@@ -1,0 +1,806 @@
+{
+	"info": {
+		"_postman_id": "kitchenly-api-collection",
+		"name": "Kitchenly API",
+		"description": "Complete API collection for Kitchenly - A platform connecting home chefs with customers",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"auth": {
+		"type": "bearer",
+		"bearer": [
+			{
+				"key": "token",
+				"value": "{{authToken}}",
+				"type": "string"
+			}
+		]
+	},
+	"variable": [
+		{
+			"key": "baseUrl",
+			"value": "http://localhost:3000/api/v1",
+			"type": "string"
+		},
+		{
+			"key": "authToken",
+			"value": "",
+			"type": "string"
+		}
+	],
+	"item": [
+		{
+			"name": "Users",
+			"item": [
+				{
+					"name": "Signup",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 201) {",
+									"    var jsonData = pm.response.json();",
+									"    pm.collectionVariables.set(\"authToken\", jsonData.token);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"John Doe\",\n  \"email\": \"john@example.com\",\n  \"password\": \"password123\",\n  \"role\": \"CUSTOMER\",\n  \"age\": 25\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/users/signup",
+							"host": ["{{baseUrl}}"],
+							"path": ["users", "signup"]
+						},
+						"description": "Register a new user account"
+					},
+					"response": []
+				},
+				{
+					"name": "Login",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 200) {",
+									"    var jsonData = pm.response.json();",
+									"    pm.collectionVariables.set(\"authToken\", jsonData.token);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"email\": \"john@example.com\",\n  \"password\": \"password123\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/users/login",
+							"host": ["{{baseUrl}}"],
+							"path": ["users", "login"]
+						},
+						"description": "Login and receive JWT token"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Current User",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/users/me",
+							"host": ["{{baseUrl}}"],
+							"path": ["users", "me"]
+						},
+						"description": "Get current authenticated user profile"
+					},
+					"response": []
+				},
+				{
+					"name": "Logout",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/users/logout",
+							"host": ["{{baseUrl}}"],
+							"path": ["users", "logout"]
+						},
+						"description": "Logout user"
+					},
+					"response": []
+				},
+				{
+					"name": "Get All Users (Admin)",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/users?page=1&limit=10",
+							"host": ["{{baseUrl}}"],
+							"path": ["users"],
+							"query": [
+								{
+									"key": "page",
+									"value": "1"
+								},
+								{
+									"key": "limit",
+									"value": "10"
+								}
+							]
+						},
+						"description": "Get all users (Admin only)"
+					},
+					"response": []
+				},
+				{
+					"name": "Get All Chefs",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/users/chiefs",
+							"host": ["{{baseUrl}}"],
+							"path": ["users", "chiefs"]
+						},
+						"description": "Get all chefs in the system"
+					},
+					"response": []
+				},
+				{
+					"name": "Get All Customers (Admin)",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/users/customers",
+							"host": ["{{baseUrl}}"],
+							"path": ["users", "customers"]
+						},
+						"description": "Get all customers (Admin only)"
+					},
+					"response": []
+				},
+				{
+					"name": "Get User by ID",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/users/:id",
+							"host": ["{{baseUrl}}"],
+							"path": ["users", ":id"],
+							"variable": [
+								{
+									"key": "id",
+									"value": "user_id_here"
+								}
+							]
+						},
+						"description": "Get user by ID"
+					},
+					"response": []
+				},
+				{
+					"name": "Update User",
+					"request": {
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"John Updated\",\n  \"age\": 26\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/users/:id",
+							"host": ["{{baseUrl}}"],
+							"path": ["users", ":id"],
+							"variable": [
+								{
+									"key": "id",
+									"value": "user_id_here"
+								}
+							]
+						},
+						"description": "Update user information"
+					},
+					"response": []
+				},
+				{
+					"name": "Delete User",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/users/:id",
+							"host": ["{{baseUrl}}"],
+							"path": ["users", ":id"],
+							"variable": [
+								{
+									"key": "id",
+									"value": "user_id_here"
+								}
+							]
+						},
+						"description": "Delete user account"
+					},
+					"response": []
+				},
+				{
+					"name": "Forgot Password",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"email\": \"john@example.com\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/users/forgotpassword",
+							"host": ["{{baseUrl}}"],
+							"path": ["users", "forgotpassword"]
+						},
+						"description": "Request password reset email"
+					},
+					"response": []
+				},
+				{
+					"name": "Reset Password",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"password\": \"newpassword123\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/users/resetpassword/:token",
+							"host": ["{{baseUrl}}"],
+							"path": ["users", "resetpassword", ":token"],
+							"variable": [
+								{
+									"key": "token",
+									"value": "reset_token_here"
+								}
+							]
+						},
+						"description": "Reset password with token"
+					},
+					"response": []
+				},
+				{
+					"name": "Set User Location",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"latitude\": 40.7128,\n  \"longitude\": -74.0060\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/users/location/:userid",
+							"host": ["{{baseUrl}}"],
+							"path": ["users", "location", ":userid"],
+							"variable": [
+								{
+									"key": "userid",
+									"value": "user_id_here"
+								}
+							]
+						},
+						"description": "Set user location coordinates"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Nearby Chefs",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/users/location/:userid?radius=5",
+							"host": ["{{baseUrl}}"],
+							"path": ["users", "location", ":userid"],
+							"query": [
+								{
+									"key": "radius",
+									"value": "5",
+									"description": "Search radius in kilometers"
+								}
+							],
+							"variable": [
+								{
+									"key": "userid",
+									"value": "user_id_here"
+								}
+							]
+						},
+						"description": "Get nearby chefs based on location"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Nearest Chefs",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/users/location/:userid/nearest",
+							"host": ["{{baseUrl}}"],
+							"path": ["users", "location", ":userid", "nearest"],
+							"variable": [
+								{
+									"key": "userid",
+									"value": "user_id_here"
+								}
+							]
+						},
+						"description": "Get nearest chefs to user location"
+					},
+					"response": []
+				}
+			],
+			"description": "User management and authentication endpoints"
+		},
+		{
+			"name": "Menu Items",
+			"item": [
+				{
+					"name": "Get All Menu Items (Chef/Admin)",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/menuitem?page=1&limit=10",
+							"host": ["{{baseUrl}}"],
+							"path": ["menuitem"],
+							"query": [
+								{
+									"key": "page",
+									"value": "1"
+								},
+								{
+									"key": "limit",
+									"value": "10"
+								},
+								{
+									"key": "foodType",
+									"value": "ITALIAN",
+									"disabled": true
+								},
+								{
+									"key": "itemType",
+									"value": "MAINDISH",
+									"disabled": true
+								}
+							]
+						},
+						"description": "Get all menu items for authenticated chef or admin"
+					},
+					"response": []
+				},
+				{
+					"name": "Create Menu Item",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "name",
+									"value": "Margherita Pizza",
+									"type": "text"
+								},
+								{
+									"key": "description",
+									"value": "Classic Italian pizza with tomato and mozzarella",
+									"type": "text"
+								},
+								{
+									"key": "price",
+									"value": "12.99",
+									"type": "text"
+								},
+								{
+									"key": "foodType",
+									"value": "ITALIAN",
+									"type": "text"
+								},
+								{
+									"key": "itemType",
+									"value": "MAINDISH",
+									"type": "text"
+								},
+								{
+									"key": "image",
+									"type": "file",
+									"src": []
+								}
+							]
+						},
+						"url": {
+							"raw": "{{baseUrl}}/menuitem",
+							"host": ["{{baseUrl}}"],
+							"path": ["menuitem"]
+						},
+						"description": "Create a new menu item (Chef/Admin only)"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Chef Menu Items (Public)",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/menuitem/public/:chefid?page=1&limit=10",
+							"host": ["{{baseUrl}}"],
+							"path": ["menuitem", "public", ":chefid"],
+							"query": [
+								{
+									"key": "page",
+									"value": "1"
+								},
+								{
+									"key": "limit",
+									"value": "10"
+								}
+							],
+							"variable": [
+								{
+									"key": "chefid",
+									"value": "chef_id_here"
+								}
+							]
+						},
+						"description": "Get all menu items for a specific chef"
+					},
+					"response": []
+				},
+				{
+					"name": "Get All Menu Items (Admin)",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/menuitem/admin?page=1&limit=10",
+							"host": ["{{baseUrl}}"],
+							"path": ["menuitem", "admin"],
+							"query": [
+								{
+									"key": "page",
+									"value": "1"
+								},
+								{
+									"key": "limit",
+									"value": "10"
+								}
+							]
+						},
+						"description": "Get all menu items in the system (Admin only)"
+					},
+					"response": []
+				},
+				{
+					"name": "Update Menu Item",
+					"request": {
+						"method": "PATCH",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "name",
+									"value": "Updated Pizza Name",
+									"type": "text"
+								},
+								{
+									"key": "price",
+									"value": "14.99",
+									"type": "text"
+								},
+								{
+									"key": "image",
+									"type": "file",
+									"src": []
+								}
+							]
+						},
+						"url": {
+							"raw": "{{baseUrl}}/menuitem/:id",
+							"host": ["{{baseUrl}}"],
+							"path": ["menuitem", ":id"],
+							"variable": [
+								{
+									"key": "id",
+									"value": "menuitem_id_here"
+								}
+							]
+						},
+						"description": "Update menu item (Chef/Admin only)"
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Menu Item",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/menuitem/:id",
+							"host": ["{{baseUrl}}"],
+							"path": ["menuitem", ":id"],
+							"variable": [
+								{
+									"key": "id",
+									"value": "menuitem_id_here"
+								}
+							]
+						},
+						"description": "Delete menu item (Chef/Admin only)"
+					},
+					"response": []
+				}
+			],
+			"description": "Menu item management endpoints"
+		},
+		{
+			"name": "Orders",
+			"item": [
+				{
+					"name": "Get All Orders",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/orders?page=1&limit=10",
+							"host": ["{{baseUrl}}"],
+							"path": ["orders"],
+							"query": [
+								{
+									"key": "page",
+									"value": "1"
+								},
+								{
+									"key": "limit",
+									"value": "10"
+								},
+								{
+									"key": "order_status",
+									"value": "PENDING",
+									"disabled": true
+								}
+							]
+						},
+						"description": "Get all orders (filtered by user role)"
+					},
+					"response": []
+				},
+				{
+					"name": "Create Order",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "chef_id",
+									"value": "chef_id_here",
+									"type": "text"
+								},
+								{
+									"key": "items",
+									"value": "[{\"menuitem_id\":\"item_id_1\",\"quantity\":2},{\"menuitem_id\":\"item_id_2\",\"quantity\":1}]",
+									"type": "text"
+								},
+								{
+									"key": "image",
+									"type": "file",
+									"src": []
+								}
+							]
+						},
+						"url": {
+							"raw": "{{baseUrl}}/orders",
+							"host": ["{{baseUrl}}"],
+							"path": ["orders"]
+						},
+						"description": "Create a new order (Customer only)"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Chef Orders",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/orders/chef?page=1&limit=10",
+							"host": ["{{baseUrl}}"],
+							"path": ["orders", "chef"],
+							"query": [
+								{
+									"key": "page",
+									"value": "1"
+								},
+								{
+									"key": "limit",
+									"value": "10"
+								},
+								{
+									"key": "order_status",
+									"value": "PENDING",
+									"disabled": true
+								}
+							]
+						},
+						"description": "Get all orders for authenticated chef"
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Order",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/orders/:id",
+							"host": ["{{baseUrl}}"],
+							"path": ["orders", ":id"],
+							"variable": [
+								{
+									"key": "id",
+									"value": "order_id_here"
+								}
+							]
+						},
+						"description": "Cancel/delete an order"
+					},
+					"response": []
+				}
+			],
+			"description": "Order management endpoints"
+		},
+		{
+			"name": "Payment",
+			"item": [
+				{
+					"name": "Create Payment Session",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"orderId\": \"order_id_here\",\n  \"amount\": 29.99\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/payment/create-session",
+							"host": ["{{baseUrl}}"],
+							"path": ["payment", "create-session"]
+						},
+						"description": "Create a Stripe payment session"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Payment Status",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/payment/:orderId/status",
+							"host": ["{{baseUrl}}"],
+							"path": ["payment", ":orderId", "status"],
+							"variable": [
+								{
+									"key": "orderId",
+									"value": "order_id_here"
+								}
+							]
+						},
+						"description": "Get payment status for an order"
+					},
+					"response": []
+				},
+				{
+					"name": "Stripe Webhook",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"type\": \"payment_intent.succeeded\",\n  \"data\": {}\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/payment/webhook",
+							"host": ["{{baseUrl}}"],
+							"path": ["payment", "webhook"]
+						},
+						"description": "Stripe webhook endpoint (configured in Stripe dashboard)"
+					},
+					"response": []
+				}
+			],
+			"description": "Payment processing endpoints"
+		}
+	]
+}

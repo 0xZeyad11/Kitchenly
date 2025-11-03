@@ -1,0 +1,540 @@
+openapi: 3.0.0
+info:
+  title: Kitchenly API
+  description: >-
+    Complete API collection for Kitchenly - A platform connecting home chefs
+    with customers
+  version: 1.0.0
+servers:
+  - url: undefined://{{baseUrl}}
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+security:
+  - bearerAuth: []
+tags:
+  - name: Users
+    description: User management and authentication endpoints
+  - name: Menu Items
+    description: Menu item management endpoints
+  - name: Orders
+    description: Order management endpoints
+  - name: Payment
+    description: Payment processing endpoints
+paths:
+  /users/signup:
+    post:
+      tags:
+        - Users
+      summary: Signup
+      description: Register a new user account
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              example:
+                name: John Doe
+                email: john@example.com
+                password: password123
+                role: CUSTOMER
+                age: 25
+      parameters:
+        - name: Content-Type
+          in: header
+          schema:
+            type: string
+          example: application/json
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /users/login:
+    post:
+      tags:
+        - Users
+      summary: Login
+      description: Login and receive JWT token
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              example:
+                email: john@example.com
+                password: password123
+      parameters:
+        - name: Content-Type
+          in: header
+          schema:
+            type: string
+          example: application/json
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /users/me:
+    get:
+      tags:
+        - Users
+      summary: Get Current User
+      description: Get current authenticated user profile
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /users/logout:
+    get:
+      tags:
+        - Users
+      summary: Logout
+      description: Logout user
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /users:
+    get:
+      tags:
+        - Users
+      summary: Get All Users (Admin)
+      description: Get all users (Admin only)
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+          example: '1'
+        - name: limit
+          in: query
+          schema:
+            type: integer
+          example: '10'
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /users/chiefs:
+    get:
+      tags:
+        - Users
+      summary: Get All Chefs
+      description: Get all chefs in the system
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /users/customers:
+    get:
+      tags:
+        - Users
+      summary: Get All Customers (Admin)
+      description: Get all customers (Admin only)
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /users/:id:
+    get:
+      tags:
+        - Users
+      summary: Get User by ID
+      description: Get user by ID
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+    patch:
+      tags:
+        - Users
+      summary: Update User
+      description: Update user information
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              example:
+                name: John Updated
+                age: 26
+      parameters:
+        - name: Content-Type
+          in: header
+          schema:
+            type: string
+          example: application/json
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+    delete:
+      tags:
+        - Users
+      summary: Delete User
+      description: Delete user account
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /users/forgotpassword:
+    patch:
+      tags:
+        - Users
+      summary: Forgot Password
+      description: Request password reset email
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              example:
+                email: john@example.com
+      parameters:
+        - name: Content-Type
+          in: header
+          schema:
+            type: string
+          example: application/json
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /users/resetpassword/:token:
+    patch:
+      tags:
+        - Users
+      summary: Reset Password
+      description: Reset password with token
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              example:
+                password: newpassword123
+      parameters:
+        - name: Content-Type
+          in: header
+          schema:
+            type: string
+          example: application/json
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /users/location/:userid:
+    post:
+      tags:
+        - Users
+      summary: Set User Location
+      description: Set user location coordinates
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              example:
+                latitude: 40.7128
+                longitude: -74.006
+      parameters:
+        - name: Content-Type
+          in: header
+          schema:
+            type: string
+          example: application/json
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+    get:
+      tags:
+        - Users
+      summary: Get Nearby Chefs
+      description: Get nearby chefs based on location
+      parameters:
+        - name: radius
+          in: query
+          schema:
+            type: integer
+          description: Search radius in kilometers
+          example: '5'
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /users/location/:userid/nearest:
+    get:
+      tags:
+        - Users
+      summary: Get Nearest Chefs
+      description: Get nearest chefs to user location
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /menuitem:
+    get:
+      tags:
+        - Menu Items
+      summary: Get All Menu Items (Chef/Admin)
+      description: Get all menu items for authenticated chef or admin
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+          example: '1'
+        - name: limit
+          in: query
+          schema:
+            type: integer
+          example: '10'
+        - name: foodType
+          in: query
+          schema:
+            type: string
+          example: ITALIAN
+        - name: itemType
+          in: query
+          schema:
+            type: string
+          example: MAINDISH
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+    post:
+      tags:
+        - Menu Items
+      summary: Create Menu Item
+      description: Create a new menu item (Chef/Admin only)
+      requestBody:
+        content: {}
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /menuitem/public/:chefid:
+    get:
+      tags:
+        - Menu Items
+      summary: Get Chef Menu Items (Public)
+      description: Get all menu items for a specific chef
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+          example: '1'
+        - name: limit
+          in: query
+          schema:
+            type: integer
+          example: '10'
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /menuitem/admin:
+    get:
+      tags:
+        - Menu Items
+      summary: Get All Menu Items (Admin)
+      description: Get all menu items in the system (Admin only)
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+          example: '1'
+        - name: limit
+          in: query
+          schema:
+            type: integer
+          example: '10'
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /menuitem/:id:
+    patch:
+      tags:
+        - Menu Items
+      summary: Update Menu Item
+      description: Update menu item (Chef/Admin only)
+      requestBody:
+        content: {}
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+    delete:
+      tags:
+        - Menu Items
+      summary: Delete Menu Item
+      description: Delete menu item (Chef/Admin only)
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /orders:
+    get:
+      tags:
+        - Orders
+      summary: Get All Orders
+      description: Get all orders (filtered by user role)
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+          example: '1'
+        - name: limit
+          in: query
+          schema:
+            type: integer
+          example: '10'
+        - name: order_status
+          in: query
+          schema:
+            type: string
+          example: PENDING
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+    post:
+      tags:
+        - Orders
+      summary: Create Order
+      description: Create a new order (Customer only)
+      requestBody:
+        content: {}
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /orders/chef:
+    get:
+      tags:
+        - Orders
+      summary: Get Chef Orders
+      description: Get all orders for authenticated chef
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+          example: '1'
+        - name: limit
+          in: query
+          schema:
+            type: integer
+          example: '10'
+        - name: order_status
+          in: query
+          schema:
+            type: string
+          example: PENDING
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /orders/:id:
+    delete:
+      tags:
+        - Orders
+      summary: Delete Order
+      description: Cancel/delete an order
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /payment/create-session:
+    post:
+      tags:
+        - Payment
+      summary: Create Payment Session
+      description: Create a Stripe payment session
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              example:
+                orderId: order_id_here
+                amount: 29.99
+      parameters:
+        - name: Content-Type
+          in: header
+          schema:
+            type: string
+          example: application/json
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /payment/:orderId/status:
+    get:
+      tags:
+        - Payment
+      summary: Get Payment Status
+      description: Get payment status for an order
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /payment/webhook:
+    post:
+      tags:
+        - Payment
+      summary: Stripe Webhook
+      description: Stripe webhook endpoint (configured in Stripe dashboard)
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              example:
+                type: payment_intent.succeeded
+                data: {}
+      parameters:
+        - name: Content-Type
+          in: header
+          schema:
+            type: string
+          example: application/json
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}

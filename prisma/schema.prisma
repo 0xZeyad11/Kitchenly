@@ -45,17 +45,19 @@ model MenuItem {
 }
 
 model Order {
-  id           String      @id @default(cuid())
-  image        String?
-  customer_id  String
-  chef_id      String
-  order_status OrderStatus @default(PENDING)
-  createdAt    DateTime    @default(now())
-  updatedAt    DateTime    @updatedAt
-  total_price  Float
-  chef         User        @relation("ChefOrders", fields: [chef_id], references: [id], onDelete: Cascade)
-  customer     User        @relation("CustomerOrders", fields: [customer_id], references: [id], onDelete: Cascade)
-  orderitems   OrderItem[]
+  id              String      @id @default(cuid())
+  image           String?
+  customer_id     String
+  chef_id         String
+  order_status    OrderStatus @default(PENDING)
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+  total_price     Float
+  paymentIntentId String?
+  paymentStatus   String?
+  chef            User        @relation("ChefOrders", fields: [chef_id], references: [id], onDelete: Cascade)
+  customer        User        @relation("CustomerOrders", fields: [customer_id], references: [id], onDelete: Cascade)
+  orderitems      OrderItem[]
 
   @@index([customer_id])
   @@index([chef_id])

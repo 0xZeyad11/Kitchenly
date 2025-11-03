@@ -25,7 +25,14 @@ export const CreateNewOrder = catchAsync(
         ),
       );
     }
-    const fullorder = await CreateOrderService(userid, chefid, items);
+    
+    // Handle optional image upload
+    let imageUrl = undefined;
+    if (req.file) {
+      imageUrl = `/uploads/${req.file.filename}`;
+    }
+    
+    const fullorder = await CreateOrderService(userid, chefid, items, imageUrl);
     apiResponse(res, "success", 200, fullorder);
   },
 );

@@ -38,7 +38,14 @@ export const CreateNewItem = catchAsync(
         new AppError(`There is no chef id associated with this item`, 404),
       );
     }
-    const rawdata = { chef_id: chefid, ...req.body };
+    
+    // Handle image upload
+    let imageUrl = undefined;
+    if (req.file) {
+      imageUrl = `/uploads/${req.file.filename}`;
+    }
+    
+    const rawdata = { chef_id: chefid, ...req.body, image: imageUrl };
     const parsed = MenuItemSchema.safeParse(rawdata);
     if (!parsed.success) {
       return next(new AppError(`${parsed.error.message}`, 400));
@@ -133,7 +140,14 @@ export const UpdateMenuItem = catchAsync(
     //   filtereddata = rest;
     //   chiefid = chief_id;
     // }
-    const validData = UpdateMenuSchema.safeParse(req.body);
+    
+    // Handle image upload
+    let updateData = { ...req.body };
+    if (req.file) {
+      updateData.image = `/uploads/${req.file.filename}`;
+    }
+    
+    const validData = UpdateMenuSchema.safeParse(updateData);
     if (!validData.success) {
       return next(sendZodError(validData.error));
     }
