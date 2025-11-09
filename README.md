@@ -36,8 +36,8 @@ A robust Node.js/Express backend API for Kitchenly - a mobile application that c
 
 1. **Clone the repository**
    ```bash
-   git clone <repository-url>
-   cd backend
+   git clone https://github.com/0xZeyad11/Kitchenly
+   cd Kitchenly
    ```
 
 2. **Install dependencies**
@@ -254,4 +254,5 @@ Real-time communication for order updates:
 - `order:created` - New order notification
 - `order:updated` - Order status change
 - `order:completed` - Order completion notification
+
 
