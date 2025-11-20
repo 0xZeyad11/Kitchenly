@@ -22,7 +22,7 @@ const fileFilter = (
   cb: FileFilterCallback,
 ) => {
   const allowedMimeTypes = ["image/jpeg", "image/jpg", "image/png", "image/webp"];
-  
+
   if (allowedMimeTypes.includes(file.mimetype)) {
     cb(null, true);
   } else {
@@ -46,8 +46,10 @@ const upload = multer({
 
 
 export const uploadSingle = (fieldName: string) => upload.single(fieldName);
+
 export const uploadMultiple = (fieldName: string, maxCount: number) =>
   upload.array(fieldName, maxCount);
+
 export const uploadFields = (fields: { name: string; maxCount: number }[]) =>
   upload.fields(fields);
 
